@@ -1,4 +1,3 @@
-
 import "./globals.css";
 import AuthProvider from "../context/AuthProvider";
 import { Toaster } from "react-hot-toast";

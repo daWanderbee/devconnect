@@ -41,6 +41,7 @@ const Page = () => {
     if (result?.error) {
       toast.error("Invalid credentials");
     } else if (result?.url) {
+      console.log("signed in successfully");
       router.replace("/dashboard");
     }
 

@@ -1,5 +1,5 @@
-import { dbConnect } from "../../lib/db";
-import User from "../../models/User";
+import { dbConnect } from "@/src/app/lib/db";
+import User from "@/src/app/models/User";
 import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@/src/helpers/sendVerificationEmail";
 
