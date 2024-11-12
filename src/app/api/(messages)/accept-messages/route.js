@@ -1,15 +1,14 @@
-import { getServerSession, User as AuthUser } from "next-auth";
-import { authOptions } from "@/src/app/api/(authentication)/auth/[...nextauth]/options";
+import { getServerSession} from "next-auth";
 import { dbConnect } from "@/src/app/lib/db";
-import { User as DBUser } from "../../models/User";
+import  User  from "@/src/app/models/User";
 
 export async function POST(req) {
     await dbConnect();
-    
-    const session = await getServerSession(authOptions);
-    const user = session?.user
+    console.log("Database connection established");
+    const session = await getServerSession();
+    const user = session?.user;
 
-    if(!Session || !session.user){
+    if (!session?.user) {
         return Response.json(
             {
                 success: false,
@@ -18,99 +17,141 @@ export async function POST(req) {
             {
                 status: 401
             }   
-        )
+        );
     }
 
-    const userId = user.id;
-    const {acceptMessages} = await req.json();
-
-    try{
-        const updatedUser = await DBUser.findByIdAndUpdate(
-            userId,
-            { isAcceptingMessages: acceptMessages },
-            { new: true }
-        )
-        if(!updatedUser){
+    try {
+        const userEmail = user?.email;
+        const foundUser = await User.findOne({ email: userEmail });
+        if (!foundUser) {
             return Response.json(
                 {
                     success: false,
-                    error: "failed to update user status to accept messages"
+                    error: "User not found"
                 },
                 {
-                    status: 401
+                    status: 404
                 }
-            )
+            );
         }
+        const userId = foundUser._id;
+        const { acceptMessages } = await req.json();
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { isAcceptingMessages: acceptMessages },
+            { new: true } 
+        );
+        console.log("User status updated to accept messages");
+        if(updatedUser) {
+            return Response.json(
+                {
+                    success: true,
+                    updatedUser,
+                    message: "User status updated to accept messages"
+                },
+                {
+                    status: 200
+                }
+            );
+        }
+
+
+        if (!updatedUser) {
+            return Response.json(
+                {
+                    success: false,
+                    error: "Failed to update user status to accept messages"
+                },
+                {
+                    status: 400
+                }
+            );
+        }
+
         return Response.json(
             {
                 success: true,
                 updatedUser,
                 message: "User status updated to accept messages"
             }
-        )
-    }catch(error){
+        );
+    } catch (error) {
         console.error("Failed to update user status to accept messages", error);
         return Response.json(
             {
                 success: false,
-                error: "failed to update user status to accept messages"
+                error: "Internal Server Error"
             },
             {
                 status: 500
             }
-        )
+        );
     }
 }
 
-export async function GET(req) {
-    await dbConnect();
+export async function GET() {
+    try {
+        // Connect to the database
+        await dbConnect();
+        console.log("Database connected");
 
-    const session = await getServerSession(authOptions);
-    const user = session?.user
+        // Fetch session data
+        const session = await getServerSession();
+        console.log("Session:", session);
 
-    if(!Session || !session.user){
-        return Response.json(
-            {
-                success: false,
-                error: "Not authenticated"
-            },
-            {
-                status: 401
-            }   
-        )
-    }
-
-    const userId = user.id;
-    try{
-        const foundUser = await DBUser.findById(userId)
-    if(!foundUser){
-        return Response.json(
-            {
-                success: false,
-                error: "User not found"
-            },
-            {
-                status: 401
-            }
-        )
-    }
-
-    return Response.json(
-        {
-            success: true,
-            isAcceptingMessages: foundUser.isAcceptingMessages
+        if (!session?.user) {
+            return Response.json(
+                {
+                    success: false,
+                    error: "Not authenticated",
+                },
+                {
+                    status: 401,
+                }
+            );
         }
-    )
-    }catch(error){
-        console.error("Failed to get user status to accept messages", error);
+
+        // Extract user email from session
+        const userEmail = session.user.email;
+        console.log("Fetching user with email:", userEmail);
+
+        // Fetch the user from the database
+        const foundUser = await User.findOne({ email: userEmail });
+        console.log("Found User:", foundUser);
+
+        if (!foundUser) {
+            return Response.json(
+                {
+                    success: false,
+                    error: "User not found",
+                },
+                {
+                    status: 404,
+                }
+            );
+        }
+
+        // Return user's `isAcceptingMessages` status
+        return Response.json(
+            {
+                success: true,
+                isAcceptingMessages: foundUser.isAcceptingMessages,
+            },
+            {
+                status: 200,
+            }
+        );
+    } catch (error) {
+        console.error("Error in GET handler:", error);
         return Response.json(
             {
                 success: false,
-                error: "failed to get user status to accept messages"
+                error: "Internal Server Error",
             },
             {
-                status: 500})
-
+                status: 500,
+            }
+        );
     }
-
 }
