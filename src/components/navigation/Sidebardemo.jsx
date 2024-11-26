@@ -16,6 +16,7 @@ export function SidebarDemo({ children }) {
   };
 
   const [fullName, setFullName] = useState('');
+  const [image, setImage] = useState('');
 
   const fetchUserName = async () => {
     const session = await getSession();
@@ -25,7 +26,7 @@ export function SidebarDemo({ children }) {
       try {
         const response = await axios.get(apiUrl);
         if (response.data) {
-          return response.data.user.fullName;
+          return response.data.user;
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -36,12 +37,15 @@ export function SidebarDemo({ children }) {
 
   // Use useMemo to only fetch and set fullName once per session
   const userFullName = useMemo(() => {
-    fetchUserName().then(name => setFullName(name));
+    fetchUserName().then(name => setFullName(name.fullName));
+  }, []); // Empty dependency array ensures it only runs once.
+  const userImage = useMemo(() => {
+    fetchUserName().then(img => setImage(img.coverImg));
   }, []); // Empty dependency array ensures it only runs once.
 
   const links = [
-    { label: "Dashboard", href: "#", icon: <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
-    { label: "Profile", href: "#", icon: <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
+    { label: "Dashboard", href: "/dashboard", icon: <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
+    { label: "Profile", href: "/profile", icon: <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
     { label: "Settings", href: "#", icon: <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
     { label: "Logout", href: "#", icon: <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
   ];
@@ -61,7 +65,7 @@ export function SidebarDemo({ children }) {
             </div>
           </div>
           <div>
-            <SidebarLink link={{ label: fullName, href: "#", icon: <Image src="https://assets.aceternity.com/manu.png" className="h-7 w-7 flex-shrink-0 rounded-full" width={50} height={50} alt="Avatar" /> }} />
+            <SidebarLink link={{ label: fullName, href: "#", icon: <Image src={image} className="h-7 w-7 flex-shrink-0 rounded-full" width={50} height={50} alt="Avatar" /> }} />
           </div>
         </SidebarBody>
       </Sidebar>
@@ -73,7 +77,7 @@ export function SidebarDemo({ children }) {
 export const Logo = ({ fullName }) => {
   return (
     <Link href="#" className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
-      <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      <p></p>
       <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-medium text-black dark:text-white whitespace-pre">
         Welcome! {fullName}
       </motion.span>
