@@ -11,6 +11,8 @@ import { Input } from "@/src/components/ui/input";
 import { cn } from "@/src/app/lib/utils";
 import Loader from "@/src/components/loader";
 import PropTypes from "prop-types";
+import { useEffect } from "react";
+
 
 const Page = () => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -26,6 +28,12 @@ const Page = () => {
 
   const { handleSubmit, register, formState: { errors } } = form;
 
+  useEffect(() => {
+    if (errors.password?.message) {
+      toast.error(errors.password?.message);
+    }
+  }, [errors.password?.message]);
+
   const onSubmit = async (data) => {
     setIsSubmitting(true);
 
@@ -38,13 +46,14 @@ const Page = () => {
     });
 
     console.log("SignIn Result: ", result); // for debugging
+
     if (result?.error) {
       toast.error("Invalid credentials");
     } else if (result?.url) {
       console.log("signed in successfully");
       router.replace("/dashboard");
     }
-
+    
     setIsSubmitting(false);
   };
 
@@ -68,11 +77,11 @@ const Page = () => {
             {...register("identifier")}
           />
         </LabelInputContainer>
-        {errors.identifier && (
-  <p className="text-red-500 text-sm">{errors.identifier.message}</p>
+        {errors.password?.message && (
+  <p className="text-red-500 text-sm m-0">{errors.password?.message}</p>
 )}
 
-        <LabelInputContainer className="mb-4">
+        <LabelInputContainer className="mb-2">
           <Label htmlFor="password">Password</Label>
           <Input
             id="password"

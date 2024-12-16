@@ -9,6 +9,7 @@ import Image from "next/image";
 import { cn } from "@/src/app/lib/utils";
 import { getSession } from "next-auth/react";
 import axios from "axios";
+import UserImg from "@/src/components/assets/svg/user.svg";
 
 export function SidebarDemo({ children }) {
   SidebarDemo.propTypes = {
@@ -16,7 +17,7 @@ export function SidebarDemo({ children }) {
   };
 
   const [fullName, setFullName] = useState('');
-  const [image, setImage] = useState('');
+  const [image, setImage] = useState(UserImg);
 
   const fetchUserName = async () => {
     const session = await getSession();
@@ -40,7 +41,7 @@ export function SidebarDemo({ children }) {
     fetchUserName().then(name => setFullName(name.fullName));
   }, []); // Empty dependency array ensures it only runs once.
   const userImage = useMemo(() => {
-    fetchUserName().then(img => setImage(img.coverImg));
+    fetchUserName().then(img => setImage(img?.coverImg || UserImg));
   }, []); // Empty dependency array ensures it only runs once.
 
   const links = [
@@ -57,7 +58,7 @@ export function SidebarDemo({ children }) {
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            {open ? <Logo fullName={fullName} /> : <LogoIcon />}
+            {open ? <Logo fullName={fullName.split(" ")[0]} /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
                 <SidebarLink key={idx} link={link} />

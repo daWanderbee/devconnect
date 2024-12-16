@@ -37,8 +37,11 @@ const Navbar = () => {
         className={`text-lg m-0 p-0 font-bold rounded transition duration-300`}
         aria-expanded={isCreatingPost} // Accessibility
         aria-controls="create-post"
-      >
-        {isCreatingPost ? <Addpost/> : (onhover? <Addpost className = "ease-in"/>:<Unselected className="ease-in"/>)}
+      > {isCreatingPost ? 
+        <Addpost className="ease-in w-full h-full" />
+       : 
+          <Unselected className="ease-in w-full h-full" />
+      }
       </button>
 
       {/* CreatePost Modal */}

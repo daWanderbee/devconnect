@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { getSession } from "next-auth/react";
 import axios from "axios";
+import Labels from "@/src/components/profile/Labels";
 import MyPosts from "@/src/components/profile/MyPosts";
 import { DirectionAwareHoverDemo } from "@/src/components/profile/Profilepic";
 
@@ -13,6 +14,7 @@ const Page = () => {
   const [followers, setFollowers] = useState();
   const [following, setFollowing] = useState();
   const [image, setImage] = useState();
+  const [coverImg, setCoverImg] = useState();
   const [opacity, setOpacity] = useState(1); // State to track opacity
   const scrollContainerRef = useRef(null); // Ref for the scrollable container
 
@@ -68,20 +70,23 @@ const Page = () => {
 
   return (
     <div ref={scrollContainerRef} className="w-full h-screen overflow-y-scroll">
-      <div className="bg-black w-full h-64"></div>
+      <div className="bg-slate-400 w-full h-64"></div>
       <div
         className="mx-auto top-0 fixed right-5 transition-opacity duration-50 ease-in-out"
         style={{ opacity }} // Bind opacity to the calculated value
       >
         <DirectionAwareHoverDemo img={image} fullname={fullName} />
       </div>
+      <span><div>
       <div className="w-10 m-10 text-3xl font-bold text-yellow-50 mt-5 mb-4">
         {fullName}
       </div>
-      <div className="m-10 w-full text-l font-bold text-yellow-50 mt-5">
+      <div className="m-10 w-40 ext-l font-bold text-yellow-50 mt-5">
         {bio}
       </div>
-      <div className="mt-40">
+      </div>
+      <span><Labels /></span></span>
+      <div>
         <MyPosts />
         My posts
       </div>

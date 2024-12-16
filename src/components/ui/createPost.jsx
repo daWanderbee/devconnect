@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import PropTypes from "prop-types";
 import { useForm } from "react-hook-form";
 
 const CreatePost = ({ handleClosePost }) => {
@@ -159,6 +160,9 @@ const CreatePost = ({ handleClosePost }) => {
       </div>
     </form>
   );
+};
+CreatePost.propTypes = {
+  handleClosePost: PropTypes.func.isRequired,
 };
 
 export default CreatePost;
