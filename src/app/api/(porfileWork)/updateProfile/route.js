@@ -2,11 +2,11 @@ import { dbConnect } from "@/src/app/lib/db";
 import User from "@/src/app/models/User";
 import { getServerSession } from "next-auth";
 
-export async function  POST(req){
+export async function POST(req) {
     await dbConnect();
 
     const session = await getServerSession();
-    if(!session){
+    if (!session) {
         return new Response(
             JSON.stringify({
                 success: false,
@@ -17,7 +17,7 @@ export async function  POST(req){
     }
 
     const user = await User.findOne({ email: session.user.email });
-    if(!user){
+    if (!user) {
         return new Response(
             JSON.stringify({
                 success: false,
@@ -27,13 +27,15 @@ export async function  POST(req){
         );
     }
 
-    const { username , fullName , bio , coverImg } = await req.json();
+    const { username, fullName, bio, coverImg, profileImg } = await req.json();
 
-    try{
-        user.username = username;
-        user.fullName = fullName;
-        user.bio = bio;
-        user.coverImg = coverImg;
+    try {
+        // Only update the fields that are provided
+        if (username) user.username = username;
+        if (fullName) user.fullName = fullName;
+        if (bio) user.bio = bio;
+        if (coverImg) user.coverImg = coverImg;
+        if (profileImg) user.profileImg = profileImg;
 
         await user.save();
 
@@ -44,11 +46,11 @@ export async function  POST(req){
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         );
-    }catch(err){
+    } catch (err) {
         return new Response(
             JSON.stringify({
                 success: false,
-                message :"Error updating profile"
+                message: "Error updating profile"
             }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         );

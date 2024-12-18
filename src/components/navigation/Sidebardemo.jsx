@@ -41,7 +41,7 @@ export function SidebarDemo({ children }) {
     fetchUserName().then(name => setFullName(name.fullName));
   }, []); // Empty dependency array ensures it only runs once.
   const userImage = useMemo(() => {
-    fetchUserName().then(img => setImage(img?.coverImg || UserImg));
+    fetchUserName().then(img => setImage(img?.profileImg || UserImg));
   }, []); // Empty dependency array ensures it only runs once.
 
   const links = [
