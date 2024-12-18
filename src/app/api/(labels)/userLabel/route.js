@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import User from "@/src/app/models/User";
 
 export async function POST(req) {
+
     try {
         // Connect to the database
         await dbConnect();
@@ -43,7 +44,7 @@ export async function POST(req) {
             
             // Merge and deduplicate labels
             existing.labels = existing.labels.concat(labels).filter((value, index, self) =>
-                index === self.findIndex((t) => t.name === value.name && t.color === value.color)
+                index === self.findIndex((t) => t.name === value.name && t.color === value.color && t._id === value._id)
             );
             await existing.save();
             return NextResponse.json({ message: "Labels added successfully" }, { status: 200 });

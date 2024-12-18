@@ -34,7 +34,7 @@ export async function GET() {
         console.log("User labels:", userLabels);
 
         // Add any labels from allLabels that are not in userLabels
-        const updatedLabels = [...userLabels];
+        const updatedLabels =[];
 
         allLabels.forEach(label => {
             const labelExists = userLabels.some(

@@ -1,41 +1,33 @@
 import { dbConnect } from "@/src/app/lib/db";
 import UserLabels from "@/src/app/models/UserLabels";
 import { getServerSession } from "next-auth";
-import axios from 'axios';
+import { NextResponse } from "next/server";
+import User from "@/src/app/models/User";
 
-export default async function GET(req, res) {
+export async function GET() {
   try {
     // Connect to the database
     await dbConnect();
 
     // Get session details
-    const session = await getServerSession(req);
+    const session = await getServerSession();
     if (!session) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("Session User ID:", session.user._id);
-
-    // Fetch user profile data from another API
-    const apiUrl = `/api/profile?id=${session.user._id}`;
-    const response = await axios.get(apiUrl);
-
-    if (!response.data) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    console.log("User Profile Data:", response.data);
+    const user = await User.findOne({ email: session.user.email });
+    const userId = user?._id;
 
     // Fetch user labels from the database
-    const userLabels = await UserLabels.findOne({ userId: session.user._id });
+    const userLabels = await UserLabels.findOne({ userId });
     if (!userLabels) {
-      return res.status(404).json({ error: "User labels not found" });
+      return NextResponse.json({ error: "User labels not found" }, { status: 404 });
     }
 
     // Respond with user labels
-    res.status(200).json({ userLabels });
+    return NextResponse.json({ userLabels }, { status: 200 });
   } catch (error) {
     console.error("Error fetching user labels:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

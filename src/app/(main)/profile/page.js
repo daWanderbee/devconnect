@@ -77,7 +77,7 @@ const Page = () => {
       >
         <DirectionAwareHoverDemo img={image} fullname={fullName} />
       </div>
-      <span><div>
+      <div>
       <div className="w-10 m-10 text-3xl font-bold text-yellow-50 mt-5 mb-4">
         {fullName}
       </div>
@@ -85,7 +85,7 @@ const Page = () => {
         {bio}
       </div>
       </div>
-      <span><Labels /></span></span>
+      <Labels />
       <div>
         <MyPosts />
         My posts
