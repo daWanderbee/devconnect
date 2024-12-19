@@ -29,6 +29,16 @@ export async function POST(req) {
 
     const { username, fullName, bio, coverImg, profileImg } = await req.json();
 
+    const userNameFound = await User.findOne({ username });
+    if (userNameFound && userNameFound.email !== user.email) {
+        return new Response(
+            JSON.stringify({
+                success: false,
+                message: "Username already exists"
+            }),
+            { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+    }
     try {
         // Only update the fields that are provided
         if (username) user.username = username;

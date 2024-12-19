@@ -6,6 +6,7 @@ import Labels from "@/src/components/profile/Labels";
 import MyPosts from "@/src/components/profile/MyPosts";
 import { DirectionAwareHoverDemo } from "@/src/components/profile/Profilepic";
 import ProfileUpdateForm from "@/src/components/ui/updateProfile";
+import PasswordUpdateForm from "@/src/components/ui/updatePasswordForm";
 
 const Page = () => {
   const [user, setUser] = useState(null);
@@ -19,6 +20,7 @@ const Page = () => {
   const [opacity, setOpacity] = useState(1); // State to track opacity
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false); // State for showing profile update form
   const scrollContainerRef = useRef(null); // Ref for the scrollable container
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -81,6 +83,13 @@ const Page = () => {
     setIsUpdatingProfile(false); // Hide the form
   };
 
+  const handleOpenPasswordUpdate = () => {
+    setIsUpdatingPassword(true); // Show the form
+  }
+  const handleClosePasswordUpdate = () => {
+    setIsUpdatingPassword(false); // Hide the form
+  }
+
   return (
     <div ref={scrollContainerRef} className="w-full h-screen overflow-y-scroll">
       <div className="bg-slate-400 w-full h-64 ">
@@ -115,6 +124,7 @@ const Page = () => {
         Update Profile
       </button>
 
+      
       {/* Profile Update Form Modal */}
       {isUpdatingProfile && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -130,6 +140,41 @@ const Page = () => {
 
             {/* Render ProfileUpdateForm */}
             <ProfileUpdateForm handleCloseProfile={handleCloseProfileUpdate} />
+          </div>
+        </div>
+      )}
+
+       {/* Button to open Profile Update form */}
+       <button
+        onClick={handleOpenPasswordUpdate}
+        className="px-6 mx-5 py-2 rounded-lg bg-stone-900 hover:bg-stone-500 text-white"
+      >
+        Update Password
+      </button>
+
+      
+      {/* Profile Update Form Modal */}
+      {isUpdatingPassword && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="rounded-lg shadow-lg p-6 w-11/12 md:w-3/5 lg:w-2/5">
+            {/* Close Button */}
+            <button
+              onClick={handleClosePasswordUpdate}
+              className="absolute top-4 right-4 text-black hover:text-red-600 font-bold text-2xl"
+              aria-label="Close Update Profile"
+            >
+              &times;
+            </button>
+
+            {/* Render ProfileUpdateForm */}
+            <PasswordUpdateForm
+  handleCloseProfile={handleClosePasswordUpdate}
+  currentProfile={{
+    profileImg: image,
+    coverImg: coverImg,
+  }}
+/>
+
           </div>
         </div>
       )}
