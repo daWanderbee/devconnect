@@ -7,6 +7,7 @@ import MyPosts from "@/src/components/profile/MyPosts";
 import { DirectionAwareHoverDemo } from "@/src/components/profile/Profilepic";
 import ProfileUpdateForm from "@/src/components/ui/updateProfile";
 import PasswordUpdateForm from "@/src/components/ui/updatePasswordForm";
+import Followers from "@/src/components/profile/Followers";
 
 const Page = () => {
   const [user, setUser] = useState(null);
@@ -147,7 +148,7 @@ const Page = () => {
        {/* Button to open Profile Update form */}
        <button
         onClick={handleOpenPasswordUpdate}
-        className="px-6 mx-5 py-2 rounded-lg bg-stone-900 hover:bg-stone-500 text-white"
+        className="px-6 mx-0 py-2 rounded-lg bg-stone-900 hover:bg-stone-500 text-white"
       >
         Update Password
       </button>
@@ -155,12 +156,12 @@ const Page = () => {
       
       {/* Profile Update Form Modal */}
       {isUpdatingPassword && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 m-0 flex items-center justify-center bg-black bg-opacity-50 ">
           <div className="rounded-lg shadow-lg p-6 w-11/12 md:w-3/5 lg:w-2/5">
             {/* Close Button */}
             <button
               onClick={handleClosePasswordUpdate}
-              className="absolute top-4 right-4 text-black hover:text-red-600 font-bold text-2xl"
+              className="absolute top-4 right-2 text-black hover:text-red-600 font-bold text-2xl"
               aria-label="Close Update Profile"
             >
               &times;
@@ -174,11 +175,14 @@ const Page = () => {
     coverImg: coverImg,
   }}
 />
+ 
+ 
 
           </div>
+          
         </div>
       )}
-
+      <button className="px-6 mx-10 py-2 rounded-lg bg-stone-900 hover:bg-stone-500 text-white"><Followers/></button>
       <Labels />
       <div>
         <MyPosts />

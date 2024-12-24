@@ -3,9 +3,13 @@ import React, { useEffect, useState, useMemo } from "react";
 import Post from "@/src/components/Post";
 import axios from "axios";
 import Navbar from "@/src/components/navigation/Navbar";
+import Notifications from "@/src/components/ui/Notifications";
+import Followunfollow from "@/src/components/followunfollow";
 
 const Page = () => {
   const [posts, setPosts] = useState([]);
+  const [notificationVisible, setNotificationVisible] = useState(false);
+  const [peopleVisible, setPeopleVisible] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -21,6 +25,18 @@ const Page = () => {
     fetchPosts();
   }, []);
 
+  const handleCloseNotifications = () => {
+    setNotificationVisible(false);
+  }
+  const notificationButtonClick = () => {
+    setNotificationVisible(!notificationVisible);
+    console.log("Notification button clicked");
+  }
+
+  const handleClickPeople = () => {
+    setPeopleVisible(!peopleVisible);
+    console.log("People button clicked");
+  }
   // Memoize the transformed posts data
   const processedPosts = useMemo(() => {
     return posts.map((post) => ({
@@ -30,14 +46,26 @@ const Page = () => {
   }, [posts]);
 
   return (
-    <div className="h-screen relative overflow-y-scroll scrollbar-hidden mt-0 pt-0 mx-auto p-4">
-      <Navbar />
-      <div className="w-full max-w-4xl space-y-6">
+    <div className=" h-screen w-full relative overflow-y-scroll scrollbar-hidden mt-0 pt-0 mx-auto p-4">
+      <Navbar onNotificationButtonClick={notificationButtonClick} onPeopleButtonClick={handleClickPeople}/>
+      <div className="md:grid md:grid-cols-12">   
+      <div className="col-span-3 w-1/2"></div>
+      <div className="w-full col-span-6 max-w-4xl space-y-6 justify-between">
+      {peopleVisible && (
+            <div className="absolute inset-0 flex transition-all duration-300 items-center justify-center">
+              <Followunfollow closeFollowUnfollow={handleClickPeople}/>
+            </div>
+          )}
+      {notificationVisible && (
+            <div className="absolute inset-0 flex transition-all duration-300 items-center justify-center">
+              <Notifications closeNotifications={handleCloseNotifications}/>
+            </div>
+          )}
         {processedPosts && processedPosts.length > 0 ? (
           processedPosts.map((post) => (
             <Post
               key={post._id}
-              id={post._id}
+              postId={post._id}
               author={post.userId}
               date={
                 post.createdAt
@@ -54,6 +82,11 @@ const Page = () => {
           <p>No posts found</p>
         )}
       </div>
+      <div className="md:grid md:grid-rows-2 md:h-screen md:col-span-3 w-full">
+      <div className = "hidden mt-5 md:block w-full row-span-1 justify-items-center "><Notifications /></div>
+      <div className = " hidden mt-5 md:block w-full h-full justify-items-center "><Followunfollow/></div>
+      </div>
+        </div>
     </div>
   );
 };
