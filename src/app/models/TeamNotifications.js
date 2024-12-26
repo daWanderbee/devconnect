@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const messageSchema = new mongoose.Schema({
+const teamNotificationSchema = new mongoose.Schema({
     content:{
         type: String,
         required: true,
@@ -8,6 +8,11 @@ const messageSchema = new mongoose.Schema({
     createdAt:{
         type: Date,
         default: Date.now(),
+        required: true,
+    },
+    createdFor:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Team",
         required: true,
     },
     createdBy:{
@@ -22,7 +27,3 @@ const messageSchema = new mongoose.Schema({
 },
     { timestamps: true }
 );
-
-const Message = mongoose.models.Message || mongoose.model("Message", messageSchema);
-
-export default Message;

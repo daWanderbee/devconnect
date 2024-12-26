@@ -88,7 +88,7 @@ const Followunfollow = ({ closeFollowUnfollow }) => {
                   <img
                     src={user.profileImg || "https://i.pinimg.com/736x/7d/d7/49/7dd749ba968cd0f2716d988a592f461e.jpg"}
                     alt="user"
-                    className="w-10 h-10 rounded-full border border-cyan-400 object-cover"
+                    className="w-10 h-10 overflow-hidden rounded-full border border-cyan-400 object-cover"
                   />
                   <div>
                     <p className="text-white font-semibold text-sm">{user.fullName}</p>
