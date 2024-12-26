@@ -41,7 +41,7 @@ const Page = () => {
   const processedPosts = useMemo(() => {
     return posts.map((post) => ({
       ...post,
-      summary: post.desc ? post.desc.slice(0, 100) : "No description", // Example transformation
+      summary: post.desc,
     }));
   }, [posts]);
 

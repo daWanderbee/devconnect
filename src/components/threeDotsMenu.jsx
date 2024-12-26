@@ -26,7 +26,7 @@ const ThreeDotsMenu = ({ onShowUpdate, onDelete }) => {
         </svg>
       </button>
       {visibility && (
-        <div className="absolute right-0 bg-stone-800 text-white rounded-lg shadow-lg mt-2 z-10">
+        <div className="absolute bg-stone-800 text-white rounded-lg shadow-lg mt-2 z-10">
           <button
             onClick={() => {
               setVisibility(false);

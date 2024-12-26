@@ -8,6 +8,8 @@ import { DirectionAwareHoverDemo } from "@/src/components/profile/Profilepic";
 import ProfileUpdateForm from "@/src/components/ui/updateProfile";
 import PasswordUpdateForm from "@/src/components/ui/updatePasswordForm";
 import Followers from "@/src/components/profile/Followers";
+import Following from "@/src/components/profile/Following";
+import FollowersFollowing from "@/src/components/profile/FollowersFollowing";
 
 const Page = () => {
   const [user, setUser] = useState(null);
@@ -22,6 +24,8 @@ const Page = () => {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false); // State for showing profile update form
   const scrollContainerRef = useRef(null); // Ref for the scrollable container
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [followersOpen, setFollowersOpen] = useState(false);
+  const [followingOpen, setFollowingOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -74,6 +78,22 @@ const Page = () => {
     };
   }, []);
 
+  const setOnFollwersorFollowingButton = (followersOrFollowing) => {
+    if(followersOrFollowing === "followers"){
+      setFollowersOpen(!followersOpen);
+    }
+    else{
+      setFollowingOpen(!followingOpen);
+    }
+  };
+  const closeFollowUnfollow = (x) => {
+    if(x === "followers"){
+      setFollowersOpen(false);
+    }else
+    {
+      setFollowingOpen(false);
+    }
+  };
   // Handle showing the profile update form
   const handleOpenProfileUpdate = () => {
     setIsUpdatingProfile(true); // Show the form
@@ -108,7 +128,7 @@ const Page = () => {
       >
         <DirectionAwareHoverDemo img={image} fullname={fullName} />
       </div>
-      <div>
+      <div >
         <div className="w-10 pt-32 m-10 text-3xl font-bold text-yellow-50 mt-5 mb-4">
           {fullName}
         </div>
@@ -116,44 +136,72 @@ const Page = () => {
           {bio}
         </div>
       </div>
+      <div className="flex justify-items-center w-full p-5 m-0 gap-2">
+        {/* Button to open Profile Update form */}
+        <button
+          onClick={handleOpenProfileUpdate}
+          className="px-6 mx-2 py-2 rounded-lg bg-stone-900 hover:bg-stone-500 text-white"
+        >
+          Update Profile
+        </button>
 
-      {/* Button to open Profile Update form */}
-      <button
-        onClick={handleOpenProfileUpdate}
-        className="px-6 mx-10 py-2 rounded-lg bg-stone-900 hover:bg-stone-500 text-white"
-      >
-        Update Profile
-      </button>
 
-      
-      {/* Profile Update Form Modal */}
-      {isUpdatingProfile && (
+        {/* Profile Update Form Modal */}
+        {isUpdatingProfile && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="rounded-lg shadow-lg p-6 w-11/12 md:w-3/5 lg:w-2/5">
+              {/* Close Button */}
+              <button
+                onClick={handleCloseProfileUpdate}
+                className="absolute top-4 right-4 text-black hover:text-red-600 font-bold text-2xl"
+                aria-label="Close Update Profile"
+              >
+                &times;
+              </button>
+
+              {/* Render ProfileUpdateForm */}
+              <ProfileUpdateForm handleCloseProfile={handleCloseProfileUpdate} />
+            </div>
+          </div>
+        )}
+
+        {/* Button to open Profile Update form */}
+        <button
+          onClick={handleOpenPasswordUpdate}
+          className="px-6 mx-0 py-2 rounded-lg bg-stone-900 hover:bg-stone-500 text-white"
+        >
+          Update Password
+        </button>
+
+
+      </div>
+      <div className="flex justify-center w-full gap-10">
+        <button onClick={()=>setOnFollwersorFollowingButton("followers")} className="px-6 py-2  rounded-lg  hover:bg-stone-500 text-white"><Followers followers={followers} /></button>
+        <button onClick={()=>setOnFollwersorFollowingButton("following")} className="px-6 py-2  rounded-lg  hover:bg-stone-500 text-white"><Following following={following}/></button>
+      </div>
+
+      {/* Followers/Following Modal */}
+      {followersOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="rounded-lg shadow-lg p-6 w-11/12 md:w-3/5 lg:w-2/5">
             {/* Close Button */}
-            <button
-              onClick={handleCloseProfileUpdate}
-              className="absolute top-4 right-4 text-black hover:text-red-600 font-bold text-2xl"
-              aria-label="Close Update Profile"
-            >
-              &times;
-            </button>
-
-            {/* Render ProfileUpdateForm */}
-            <ProfileUpdateForm handleCloseProfile={handleCloseProfileUpdate} />
+           
+            {/* Render Followers */}
+            <FollowersFollowing FollowersorFollowingClicked={"Followers"} FollowersFollowinglist={followers} closeAll={()=>closeFollowUnfollow('followers')} FollowingList={following}  />
           </div>
         </div>
       )}
 
-       {/* Button to open Profile Update form */}
-       <button
-        onClick={handleOpenPasswordUpdate}
-        className="px-6 mx-0 py-2 rounded-lg bg-stone-900 hover:bg-stone-500 text-white"
-      >
-        Update Password
-      </button>
+      {followingOpen && (
+        <div className=" fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="rounded-lg shadow-lg p-6 w-11/12 md:w-3/5 lg:w-2/5">
+            {/* Render Following */}
+            <FollowersFollowing FollowersorFollowingClicked={"Following"} FollowersFollowinglist={following} closeAll={()=>closeFollowUnfollow('following')}  />
+          </div>
+        </div>
+      )}
 
-      
+      {/* Following Modal */}
       {/* Profile Update Form Modal */}
       {isUpdatingPassword && (
         <div className="fixed inset-0 m-0 flex items-center justify-center bg-black bg-opacity-50 ">
@@ -166,23 +214,19 @@ const Page = () => {
             >
               &times;
             </button>
-
             {/* Render ProfileUpdateForm */}
             <PasswordUpdateForm
-  handleCloseProfile={handleClosePasswordUpdate}
-  currentProfile={{
-    profileImg: image,
-    coverImg: coverImg,
-  }}
-/>
- 
- 
-
+              handleCloseProfile={handleClosePasswordUpdate}
+              currentProfile={{
+                profileImg: image,
+                coverImg: coverImg,
+              }}
+            />
           </div>
-          
         </div>
       )}
-      <button className="px-6 mx-10 py-2 rounded-lg bg-stone-900 hover:bg-stone-500 text-white"><Followers/></button>
+
+      
       <Labels />
       <div>
         <MyPosts />
