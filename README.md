@@ -1,6 +1,3 @@
-Here's your updated **DevConnect** README with the requested additions of **Zod**, **JavaScript**, and **React Hook Form**:
-
----
 
 # 🌐 **DevConnect**  
 *A social media platform tailored for developers to connect, share, and grow.*  
@@ -128,7 +125,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 **Asmita**  
 - [LinkedIn](https://linkedin.com/in/yourprofile)  
 - [GitHub](https://github.com/yourusername)  
-
----
-
-Let me know if you'd like to adjust anything further!
