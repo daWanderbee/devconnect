@@ -3,7 +3,6 @@ import ThreeDotsMenu from "@/src/components/ThreeDotsMenu";
 import UpdatePost from "@/src/components/ui/UpdatePost";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { set } from "mongoose";
 
 const HeartIcon = ({ filled }) => (
   <svg
@@ -49,7 +48,6 @@ const Post = ({
   likes = [],
   team = false,
   onPostUpdate = () => {return "onPostUpdate not implemented";},
-//todo add onPostUpdate
 }) => {
   
   const [likeCount, setLikeCount] = useState(likes.length);
