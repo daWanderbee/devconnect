@@ -2,7 +2,7 @@
 # 🌐 **DevConnect**  
 *A social media platform tailored for developers to connect, share, and grow.*  
 
-![DevConnect Banner](https://via.placeholder.com/1000x300.png?text=DevConnect+%7C+A+Social+Platform+for+Developers)  
+![DevConnect Banner](https://res.cloudinary.com/wanderbee/image/upload/v1735319293/Lgog_aygypb.png)  
 
 ---
 
