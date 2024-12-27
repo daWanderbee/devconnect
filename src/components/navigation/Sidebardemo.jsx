@@ -10,14 +10,25 @@ import { cn } from "@/src/app/lib/utils";
 import { getSession } from "next-auth/react";
 import axios from "axios";
 import UserImg from "@/src/components/assets/svg/user.svg";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
 
 export function SidebarDemo({ children }) {
   SidebarDemo.propTypes = {
     children: PropTypes.node,
   };
 
+  const router = useRouter();
+
   const [fullName, setFullName] = useState('');
   const [image, setImage] = useState(UserImg);
+
+  const onSignout = async () => {
+    console.log("User signed out");
+    await signOut({ redirect: false });
+    router.replace("/");
+  };
 
   const fetchUserName = async () => {
     const session = await getSession();
@@ -47,8 +58,8 @@ export function SidebarDemo({ children }) {
   const links = [
     { label: "Dashboard", href: "/dashboard", icon: <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
     { label: "Profile", href: "/profile", icon: <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
-    { label: "Settings", href: "#", icon: <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
-    { label: "Logout", href: "#", icon: <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
+    { label: "Settings", href: "#", icon: <IconSettings  className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
+    { label: "Logout", href: "#", icon: <IconArrowLeft onClick={onSignout} className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
   ];
   
   const [open, setOpen] = useState(false);
@@ -77,7 +88,7 @@ export function SidebarDemo({ children }) {
 
 export const Logo = ({ fullName }) => {
   return (
-    <Link href="#" className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
+    <Link href="/profile" className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
       <p></p>
       <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-medium text-black dark:text-white whitespace-pre">
         Welcome! {fullName}
@@ -89,7 +100,7 @@ export const Logo = ({ fullName }) => {
 export const LogoIcon = () => {
   return (
     <Link href="#" className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
-      <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      <img alt="logo" className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" src="https://res.cloudinary.com/wanderbee/image/upload/v1735315243/logo_h5nzj8.png"/>
     </Link>
   );
 };
