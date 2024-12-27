@@ -54,13 +54,13 @@ This platform is a result of three months of focused effort to create something 
 ## 📸 **Screenshots**  
 
 ### **Home Page**  
-![Home Page]((https://res.cloudinary.com/wanderbee/image/upload/v1735319481/Screenshot_2024-12-27_224103_coedpd.png))  
+![Home Page](https://res.cloudinary.com/wanderbee/image/upload/v1735319481/Screenshot_2024-12-27_224103_coedpd.png)  
 
 ### **User Profile**  
-![User Profile]((https://res.cloudinary.com/wanderbee/image/upload/v1735319589/Screenshot_2024-12-27_214219_nb0ouc.png))  
+![User Profile](https://res.cloudinary.com/wanderbee/image/upload/v1735319589/Screenshot_2024-12-27_214219_nb0ouc.png)  
 
 ### **Post Creation**  
-![Post Creation]((https://res.cloudinary.com/wanderbee/image/upload/v1735319542/Screenshot_2024-12-27_223958_te9ck6.png))  
+![Post Creation](https://res.cloudinary.com/wanderbee/image/upload/v1735319542/Screenshot_2024-12-27_223958_te9ck6.png)  
 
 ---
 
