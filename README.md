@@ -123,5 +123,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## 👩‍💻 **Author**  
 **Asmita**  
-- [LinkedIn](https://linkedin.com/in/asmitaoofficial05)  
+- [LinkedIn](https://linkedin.com/in/asmitaofficial05)  
 - [GitHub](https://github.com/daWanderbee)  
