@@ -6,11 +6,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const config = {
-  api: {
-    bodyParser: false, // Disable Next.js's built-in body parser
-  },
-};
+export const runtime = "nodejs"; // Optional, use "edge" if you prefer edge functions
+export const preferredRegion = "auto"; // Optional, specify a region if needed
 
 export async function POST(req) {
   try {
