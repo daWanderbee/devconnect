@@ -1,4 +1,4 @@
-Here’s a **creative and visually appealing README file** for your **DevConnect** project:
+Here's your updated **DevConnect** README with the requested additions of **Zod**, **JavaScript**, and **React Hook Form**:
 
 ---
 
@@ -34,7 +34,7 @@ This platform is a result of three months of focused effort to create something 
 - Stay updated with detailed notifications about your interactions.  
 
 ### 🎨 **Seamless UI/UX**  
-- Built with **AcertinityUI** and **Tailwind CSS** for a modern, responsive design.  
+- Built with **AcertinityUI**, **Tailwind CSS**, and **React Hook Form** for a modern, responsive design.  
 
 ---
 
@@ -49,6 +49,8 @@ This platform is a result of three months of focused effort to create something 
 | **Mongoose**      | Object data modeling             |  
 | **Cloudinary**    | Image storage and optimization   |  
 | **Tailwind CSS**  | UI styling and responsiveness    |  
+| **Zod**           | Schema validation                |  
+| **React Hook Form** | Efficient form handling         |  
 
 ---
 
@@ -71,6 +73,8 @@ This platform is a result of three months of focused effort to create something 
 - Transitioned from following tutorials to creating a fully original platform.  
 - Designed creative tagging and notification systems from scratch.  
 - Built a cohesive full-stack app with robust authentication and seamless UX.  
+- Integrated **Zod** for form validation to ensure smooth user experience.  
+- Used **React Hook Form** for simplified form handling, leading to a better UI performance.  
 
 ### ✨ **What’s Next?**  
 - Implementing real-time messaging.  
@@ -127,4 +131,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-Let me know if you'd like further customization or additional sections!
+Let me know if you'd like to adjust anything further!
