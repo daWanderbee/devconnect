@@ -1,4 +1,4 @@
-import dbConnect from '@/utils/dbConnect';
+import dbConnect from '@/src/app/lib/db';
 import Team from '@/src/app/models/Teams';
 import { getServerSession } from 'next-auth';
 import User from '@/src/app/models/User';
