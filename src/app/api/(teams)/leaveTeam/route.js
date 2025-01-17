@@ -34,7 +34,8 @@ export async function DELETE(req) {
         console.log(user);
 
         // Extract teamId from the request body
-        const { teamId } = await req.json(); // Parse the JSON body to get teamId
+        const { searchParams } = new URL(req.url);
+        const teamId = searchParams.get("id");
         console.log("Team ID:", teamId);
         const team = await Team.findById(teamId);
         if (!team) {

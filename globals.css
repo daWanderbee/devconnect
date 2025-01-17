@@ -1,24 +1,31 @@
-.str-chat {
-    --str-chat__border-radius-circle: 6px;
-}
-
-.str-chat__theme-light {
-    --str-chat__primary-color: #009688; /* Primary color (teal) */
-    --str-chat__active-primary-color: #004d40; /* Active color (darker teal) */
-    --str-chat__surface-color: #f5f5f5; /* Light surface color */
-    --str-chat__secondary-surface-color: #fafafa; /* Secondary light surface color */
-    --str-chat__primary-surface-color: #e0f2f1; /* Light background */
-    --str-chat__primary-surface-color-low-emphasis: #edf7f7; /* Low emphasis surface */
-    --str-chat__avatar-background-color: #bf360c; /* Avatar background */
-}
-
 .str-chat__theme-dark {
-    /* New background and blue color scheme */
-    --str-chat__primary-color: #2979ff; /* New primary blue color */
-    --str-chat__active-primary-color: #1c54b2; /* Darker blue for active state */
-    --str-chat__surface-color: #3f3f46; /* stone-800 background color */
-    --str-chat__secondary-surface-color: #2979ff; /* Darker background for secondary elements */
-    --str-chat__primary-surface-color: #1c54b2; /* Darker surface for containers */
-    --str-chat__primary-surface-color-low-emphasis: #3f3f46; /* Very low emphasis background */
-    --str-chat__avatar-background-color: #ff7043; /* Avatar background */
-}
+    --str-chat__primary-color: #44403c; /* Stone-800 */
+    --str-chat__primary-overlay-color: rgba(68, 64, 60, 0.6); /* Stone-800 with opacity */
+    --str-chat__primary-color-low-emphasis: #57534e; /* Lighter Stone-800 */
+    --str-chat__active-primary-color: #3f3f3f; /* Darker Stone-800 */
+    --str-chat__on-primary-color: #ffffff; /* White for contrast on primary color */
+    --str-chat__background-color: #292524; /* Stone-900 */
+    --str-chat__secondary-background-color: #1c1917; /* Stone-950 */
+    --str-chat__primary-surface-color: #57534e; /* Stone-700 */
+    --str-chat__primary-surface-color-low-emphasis: #78716c; /* Stone-600 */
+    --str-chat__surface-color: #44403c; /* Stone-800 */
+    --str-chat__secondary-surface-color: #292524; /* Stone-900 */
+    --str-chat__tertiary-surface-color: #1c1917; /* Stone-950 */
+    --str-chat__text-color: #ffffff; /* White for text */
+    --str-chat__text-low-emphasis-color: #a8a29e; /* Stone-500 */
+    --str-chat__disabled-color: #78716c; /* Stone-600 */
+    --str-chat__on-disabled-color: #ffffff; /* White for disabled elements */
+    --str-chat__danger-color: #dc2626; /* Red-600 for errors */
+    --str-chat__message-highlight-color: #fbbf24; /* Amber-400 for highlight */
+    --str-chat__unread-badge-color: #e11d48; /* Rose-600 for unread badge */
+    --str-chat__on-unread-badge-color: #ffffff; /* White for unread badge text */
+    --str-chat__overlay-color: rgba(28, 25, 23, 0.7); /* Stone-950 with opacity */
+    --str-chat__secondary-overlay-color: rgba(28, 25, 23, 0.4); /* Stone-950 with reduced opacity */
+    --str-chat__secondary-overlay-text-color: #ffffff; /* White for overlay text */
+    --str-chat__opaque-surface-background-color: rgba(250, 250, 250, 0.85); /* Soft white for overlays */
+    --str-chat__opaque-surface-text-color: #292524; /* Stone-900 for text */
+    --str-chat__box-shadow-color: rgba(0, 0, 0, 0.8); /* Black shadow */
+    --str-chat__info-color: #16a34a; /* Green-600 for online/success indicators */
+    --str-chat__channel-header-background-color: #000000
+  }
+  

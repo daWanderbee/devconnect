@@ -52,7 +52,7 @@ const Post = ({
 }) => {
   const [likeCount, setLikeCount] = useState(likes.length);
   const [authorName, setAuthorName] = useState("Anonymous");
-  const [isTeamMember, setIsTeamMember] = useState(team);
+  const [isTeamMember, setIsTeamMember] = useState(false);
   const [user, setUser] = useState(null);
   const [isUpdateVisible, setIsUpdateVisible] = useState(false);
   const [currentDesc, setCurrentDesc] = useState(desc);
@@ -60,6 +60,25 @@ const Post = ({
   const [authordata, setAuthorData] = useState(null);
   const [liked, setLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  //Fetch team
+  useEffect(() => {
+    const fetchTeam = async () => {
+      try {
+        const response = await axios.get("/api/getTeam", {
+          params: { id: teamId }
+        });
+        console.log("Team data:", response.data.team);
+        const isamember = response.data?.team?.createdBy===user?._id||response.data?.team?.members.includes(user?._id)
+        setIsTeamMember(isamember);
+
+      } catch (error) {
+        console.error("Error fetching team data:", error);
+      }
+
+    };
+    fetchTeam();
+  }, [teamId,user]);
 
   // Fetch user session
   useEffect(() => {

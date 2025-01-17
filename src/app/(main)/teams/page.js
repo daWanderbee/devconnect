@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import PropTypes from 'prop-types';
 import { Users, UserPlus, User } from "lucide-react";
 import axios from "axios";
 import Link from "next/link";
@@ -52,7 +53,7 @@ const CreatedTeams = () => {
       </div>
       {createdTeams.length > 0 ? (
         createdTeams.map((team) => (
-          <TeamListItem key={team._id} team={team} />
+          <TeamListItem key={team._id} team={team} activeTab={"created"}/>
         ))
       ) : (
         <EmptyState message="You haven't created any teams yet" />
@@ -106,7 +107,7 @@ const JoinedTeams = () => {
       </div>
       {joinedTeams.length > 0 ? (
         joinedTeams.map((team) => (
-          <TeamListItem key={team._id} team={team} />
+          <TeamListItem key={team._id} team={team} activeTab={"Joined"} />
         ))
       ) : (
         <EmptyState message="You haven't joined any teams yet" />
@@ -116,7 +117,7 @@ const JoinedTeams = () => {
 };
 
 // Reusable Team List Item Component
-const TeamListItem = ({ team }) => {
+const TeamListItem = ({ team,activeTab }) => {
   const [teamLeader, setTeamLeader] = useState(null);
   const [teamSlug, setTeamSlug] = useState(null);
   useEffect(() => {
@@ -143,8 +144,24 @@ const TeamListItem = ({ team }) => {
     createSlug();
   }
   );
+  const leaveTeam = async () => {
+    try {
+      const response = await axios.delete(`/api/leaveTeam?id=${team._id}`);
+      console.log("Team left:", response.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  const deleteTeam = async () => {
+    try {
+      const response = await axios.delete(`/api/deleteTeam?id=${team._id}`);
+      console.log("Team deleted:", response.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
   return (
-    <Link href={`/team/${teamSlug}`}>
+    
     <div className="flex items-center px-4 py-3 border-b border-stone-800 hover:bg-stone-800/50 cursor-pointer transition-colors">
       <div className="w-12 h-12 rounded-full bg-stone-700 flex items-center justify-center mr-4 flex-shrink-0">
         <span className="text-lg font-semibold text-stone-100">
@@ -153,11 +170,27 @@ const TeamListItem = ({ team }) => {
       </div>
       
       <div className="flex-grow min-w-0">
-        <div className="flex items-center justify-between">
-          <h2 className="text-stone-100 font-medium truncate">{team.name}</h2>
+        <div className="flex justify-between">
+          <h2 className="text-stone-100 font-medium truncate ">{team.name}</h2>
+          <div>
+          <Link href={`/team/${teamSlug}`}>
           <button size="sm" className="ml-4 bg-stone-700 text-stone-100 px-2 py-1 rounded-md text-xs font-medium hover:bg-stone-600 transition-colors">
             Open Team
           </button>
+          </Link>
+          {activeTab === "created" && (
+          <button onClick = {deleteTeam} size="sm" className="ml-4 bg-stone-700 text-stone-100 px-2 py-1 rounded-md text-xs font-medium hover:bg-stone-600 transition-colors">
+            Delete Team
+          </button>)
+          }
+          {
+            activeTab === "Joined" && (
+            <button onClick = {leaveTeam} size="sm" className="ml-4 bg-stone-700 text-stone-100 px-2 py-1 rounded-md text-xs font-medium hover:bg-stone-600 transition-colors">
+              Leave Team
+            </button>
+            )
+          }
+          </div>
         </div>
         
         <div className="flex items-center gap-2 mt-1">
@@ -170,10 +203,20 @@ const TeamListItem = ({ team }) => {
         </div>
       </div>
     </div>
-  </Link>
+  
   );
 };
+TeamListItem.propTypes = {
+  team: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    createdBy: PropTypes.string.isRequired,
+    members: PropTypes.array.isRequired,
+  }).isRequired,
+  activeTab: PropTypes.string.isRequired,
+};
 
+// Main Page Component
 // Main Page Component
 const Page = () => {
   const [activeTab, setActiveTab] = useState('all');

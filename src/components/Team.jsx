@@ -60,7 +60,7 @@ export default function Team({ slug }) {
         
         // Create or join channel
         const newChannel = client.channel('messaging', slug, {
-            image: 'https://getstream.io/random_png/?name=react',
+            image: `https://getstream.io/random_png/?name=${slug}`,
             name: slug.split('-').join(' '),
             members: [userId], // Add the current user to the channel
             is_public: true, // public
