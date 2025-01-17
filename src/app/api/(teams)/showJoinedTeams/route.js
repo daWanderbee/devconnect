@@ -1,4 +1,4 @@
-import dbConnect from '@/src/app/lib/db';
+import {dbConnect} from '@/src/app/lib/db';
 import Team from '@/src/app/models/Teams';
 import { getServerSession } from 'next-auth';
 import User from '@/src/app/models/User';
@@ -8,12 +8,9 @@ export async function GET(req) {
         await dbConnect();
 
         const session = await getServerSession();
-        if (!session) {
+        if (!session || !session.user?.email) {
             return new Response(
-                JSON.stringify({
-                    success: false,
-                    error: 'Not authenticated',
-                }),
+                JSON.stringify({ success: false, error: 'Not authenticated' }),
                 { status: 401, headers: { 'Content-Type': 'application/json' } }
             );
         }
@@ -22,29 +19,22 @@ export async function GET(req) {
         const user = await User.findOne({ email: session.user.email });
         if (!user) {
             return new Response(
-                JSON.stringify({
-                    success: false,
-                    error: 'User not found',
-                }),
+                JSON.stringify({ success: false, error: 'User not found' }),
                 { status: 404, headers: { 'Content-Type': 'application/json' } }
             );
         }
 
-        const teams = await Team.find({ members: user._id });
+        const teams = await Team.find({ members: user._id }).lean();
+        console.log('Teams:', teams);
 
         return new Response(
-            JSON.stringify({
-                success: true,
-                data: teams,
-            }),
+            JSON.stringify({ success: true, data: teams }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         );
     } catch (error) {
+        console.error('Error fetching teams:', error);
         return new Response(
-            JSON.stringify({
-                success: false,
-                error: error.message,
-            }),
+            JSON.stringify({ success: false, error: error.message }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
     }

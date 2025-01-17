@@ -76,6 +76,7 @@ const Page = () => {
               img={post.img}
               likes={post.likes}
               teams={post.joinTeam}
+              teamId={post.teamId}
             />
           ))
         ) : (

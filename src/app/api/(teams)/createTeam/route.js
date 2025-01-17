@@ -51,7 +51,7 @@ export async function POST(req) {
         return new Response(
             JSON.stringify({
                 success: false,
-                error: error.message
+                error: "error registering team name"
             }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         );

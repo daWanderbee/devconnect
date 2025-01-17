@@ -41,6 +41,7 @@ const TeamIcon = ({ isMember }) => (
 
 const Post = ({
   postId,
+  teamId,
   author,
   date,
   desc,
@@ -49,7 +50,6 @@ const Post = ({
   team = false,
   onPostUpdate = () => {return "onPostUpdate not implemented";},
 }) => {
-  
   const [likeCount, setLikeCount] = useState(likes.length);
   const [authorName, setAuthorName] = useState("Anonymous");
   const [isTeamMember, setIsTeamMember] = useState(team);
@@ -59,15 +59,15 @@ const Post = ({
   const [currentImg, setCurrentImg] = useState(img);
   const [authordata, setAuthorData] = useState(null);
   const [liked, setLiked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch user session
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("/api/auth/session");
-        const session = await response.json();
-        setUser(session?.user || null);
-        setLiked(likes.includes(session?.user?._id));
+        const response = await axios.get("/api/auth/session");
+        setUser(response.data?.user || null);
+        setLiked(likes.includes(response.data?.user?._id));
       } catch (error) {
         console.error("Error fetching session:", error);
       }
@@ -80,10 +80,11 @@ const Post = ({
     const fetchAuthor = async () => {
       if (author) {
         try {
-          const response = await fetch(`/api/profile?id=${author}`);
-          const data = await response.json();
-          setAuthorName(data?.user?.fullName || "Anonymous");
-          setAuthorData(data?.user);
+          const response = await axios.get(`/api/profile`, {
+            params: { id: author }
+          });
+          setAuthorName(response.data?.user?.fullName || "Anonymous");
+          setAuthorData(response.data?.user);
         } catch (error) {
           console.error("Failed to fetch author data:", error);
         }
@@ -97,39 +98,81 @@ const Post = ({
     setCurrentDesc(desc);
     setCurrentImg(img);
     onPostUpdate(postId, desc, img);
-    
   };
+
   const onPostDelete = async (postId) => {
     try {
-      const res = await axios.delete("api/deletePost", { data: { postId } });
-      console.log("Post deleted:", res.data);
+      const response = await axios.delete("/api/deletePost", { 
+        data: { postId } 
+      });
+      console.log("Post deleted:", response.data);
       toast.success("Post deleted successfully");
-
-      
     } catch (error) {
       console.error("Error deleting post:", error);
+      toast.error("Failed to delete post");
     }
   }; 
 
   const handleLikeUnlikePost = async (postId) => {
     try {
-      const res = await axios.post("api/likeUnlike", { postId });
+      const response = await axios.post("/api/likeUnlike", { postId });
       setLiked(!liked);
-      console.log("Post liked/unliked:", res.data);
+      console.log("Post liked/unliked:", response.data);
     } catch (error) {
       console.error("Error liking post:", error);
+      toast.error("Failed to like/unlike post");
+    }
+  };
+
+  const handleTeamToggle = async () => {
+    if (!user) {
+      toast.error("Please sign in to join/leave teams");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (isTeamMember) {
+        // Leave team
+        const response = await axios.delete("/api/leaveTeam", {
+          data: { teamId }
+        });
+        
+        if (response.data.success) {
+          setIsTeamMember(false);
+          toast.success("Successfully left the team");
+        }
+      } else {
+        // Join team
+        const response = await axios.post("/api/joinTeam", {
+          teamId,
+          userId: user._id
+        });
+        
+        if (response.data.success) {
+          setIsTeamMember(true);
+          toast.success("Successfully joined the team");
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling team membership:", error);
+      toast.error(error.response?.data?.error || "Failed to update team membership");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleShowUpdate = () => setIsUpdateVisible(true);
+  
   const handleLike = () => {
+    if (!user) {
+      toast.error("Please sign in to like posts");
+      return;
+    }
     setLiked(prev => !prev);
     setLikeCount(prev => liked ? prev - 1 : prev + 1);
     handleLikeUnlikePost(postId);
   };
-  const handleTeamToggle = () => {
-    setIsTeamMember(prev => !prev);
-  }
 
   const getRelativeTime = (dateString) => {
     const diff = new Date() - new Date(dateString);
@@ -147,7 +190,7 @@ const Post = ({
       {/* Author and Menu */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-        <div className="h-12 w-12 overflow-hidden bg-gray-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
+          <div className="h-12 w-12 overflow-hidden bg-gray-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
             {authordata?.profileImg ? (
               <img
                 src={authordata.profileImg}
@@ -185,17 +228,21 @@ const Post = ({
       <div className="flex items-center justify-between mt-4">
         <button 
           onClick={handleLike} 
-          className={`flex items-center ${liked ? "text-red-500" : "text-gray-400"}`}
+          className={`flex items-center ${liked ? "text-red-500" : "text-gray-400"} ${!user && 'opacity-50'}`}
+          disabled={!user || isLoading}
         >
           <HeartIcon filled={liked} />
           <span className="ml-2">{likeCount}</span>
         </button>
         <button 
           onClick={handleTeamToggle} 
-          className={`flex items-center ${isTeamMember ? "text-green-500" : "text-gray-400"}`}
+          className={`flex items-center ${isTeamMember ? "text-green-500" : "text-gray-400"} ${(!user || isLoading) && 'opacity-50'}`}
+          disabled={!user || isLoading}
         >
           <TeamIcon isMember={isTeamMember} />
-          <span className="ml-2">{isTeamMember ? "Leave Team" : "Join Team"}</span>
+          <span className="ml-2">
+            {isLoading ? "Loading..." : (isTeamMember ? "Leave Team" : "Join Team")}
+          </span>
         </button>
       </div>
 

@@ -7,12 +7,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/src/app/lib/utils";
-import { getSession } from "next-auth/react";
+import { getSession, signOut } from "next-auth/react";
 import axios from "axios";
 import UserImg from "@/src/components/assets/svg/user.svg";
-import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
+import { StreamChat } from "stream-chat";
 
 export function SidebarDemo({ children }) {
   SidebarDemo.propTypes = {
@@ -20,50 +19,78 @@ export function SidebarDemo({ children }) {
   };
 
   const router = useRouter();
-
   const [fullName, setFullName] = useState('');
   const [image, setImage] = useState(UserImg);
+  const [client, setClient] = useState(null); // State for storing StreamChat client
+  const [loading, setLoading] = useState(true); // State for loading indicator
+  const [token, setToken] = useState(null); // Store token
+  const [open, setOpen] = useState(false); // Sidebar state
+  const [user, setUser] = useState({ _id: null }); // User state
 
   const onSignout = async () => {
     console.log("User signed out");
+
+    // Disconnect from the chat client if it's available
+    if (client) {
+      await client.disconnect();
+      console.log("StreamChat client disconnected");
+    }
+
+    // Sign out from NextAuth
     await signOut({ redirect: false });
+
+    // Redirect to the home page
     router.replace("/");
   };
 
-  const fetchUserName = async () => {
+  // Fetch user data including token
+  const fetchUserData = async () => {
     const session = await getSession();
-    console.log("Session:", session);
     if (session?.user?._id) {
       const apiUrl = `/api/profile?id=${session.user._id}`;
       try {
         const response = await axios.get(apiUrl);
-        if (response.data) {
-          return response.data.user;
+        if (response.data?.user?.token) {
+          setToken(response.data.user.token); // Set the token here
+          setFullName(response.data.user.fullName); // Set the full name
+          setImage(response.data.user.profileImg || UserImg); // Set the image
+          setUser({ _id: response.data.user._id }); // Set the user ID
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
     }
-    return '';
   };
 
-  // Use useMemo to only fetch and set fullName once per session
-  const userFullName = useMemo(() => {
-    fetchUserName().then(name => setFullName(name.fullName));
-  }, []); // Empty dependency array ensures it only runs once.
-  const userImage = useMemo(() => {
-    fetchUserName().then(img => setImage(img?.profileImg || UserImg));
-  }, []); // Empty dependency array ensures it only runs once.
+  // Initialize StreamChat client once the token is ready
+  useEffect(() => {
+    const initClient = async () => {
+      await fetchUserData();
+      if (token && !client) {  // Check if client is not already initialized
+        const chatClient = StreamChat.getInstance("vyaz8uzwffwu"); // Replace with your actual API key
+        await chatClient.connectUser(
+          { id: user._id, name: fullName },
+          token
+        );
+        setClient(chatClient);
+      }
+      setLoading(false); // Set loading to false once the token is fetched and client is initialized
+    };
+
+    initClient();
+  }, [token,user?._id]); // Only run once the token is ready
+
+  // If the token is loading, show a loading indicator
+  if (loading) return <div>Loading...</div>;
 
   const links = [
     { label: "Dashboard", href: "/dashboard", icon: <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
     { label: "Profile", href: "/profile", icon: <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
-    { label: "Settings", href: "#", icon: <IconSettings  className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
+    { label: "Teams", href: "/teams", icon: <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
+    { label: "Settings", href: "#", icon: <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
     { label: "Logout", href: "#", icon: <IconArrowLeft onClick={onSignout} className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
   ];
-  
-  const [open, setOpen] = useState(false);
-  
+
   return (
     <div className={cn("rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-full mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden", "h-[100vh]")}>
       <Sidebar open={open} setOpen={setOpen}>

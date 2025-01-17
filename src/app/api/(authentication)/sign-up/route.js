@@ -2,6 +2,7 @@ import { dbConnect } from "@/src/app/lib/db";
 import User from "@/src/app/models/User";
 import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@/src/helpers/sendVerificationEmail";
+import axios from "axios";
 
 export async function POST(request) {
     await dbConnect();
@@ -69,7 +70,6 @@ export async function POST(request) {
         // Send verification email
         const emailResponse = await sendVerificationEmail(email, username, verifyCode);
 
-        // Ensure emailResponse has a success property
         if (!emailResponse?.success) {
             return new Response(
                 JSON.stringify({
@@ -79,7 +79,34 @@ export async function POST(request) {
                 { status: 500 }
             );
         }
-        console.log(verifyCode,": verifyCode")
+
+        // Fetch the user ID
+        const userId = existingUserByEmail?._id || newUser._id;
+
+        // Fetch the token from createUser route
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+        const response = await axios.get(`${apiBaseUrl}/api/createUser?userId=${userId}`);
+        const tokenResponse = await response.data;
+        console.log(tokenResponse, ": tokenResponse");
+
+        if ( !tokenResponse?.token) {
+            return new Response(
+                JSON.stringify({
+                    success: false,
+                    message: 'Failed to fetch user token',
+                }),
+                { status: 500 }
+            );
+        }
+
+        // Update user document with the fetched token
+        const user = await User.findOne({ username });
+        if (user) {
+            user.token = tokenResponse.token;
+            await user.save();
+        }
+
+        console.log(verifyCode, ": verifyCode");
         return new Response(
             JSON.stringify({
                 success: true,

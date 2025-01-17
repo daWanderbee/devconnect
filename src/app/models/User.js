@@ -69,7 +69,11 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Message",
         default: [],
-    }]
+    }],
+    token: {
+        type: String,
+        default: "",
+    },
 },
 { timestamps: true }
 );

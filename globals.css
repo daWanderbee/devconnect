@@ -1,0 +1,24 @@
+.str-chat {
+    --str-chat__border-radius-circle: 6px;
+}
+
+.str-chat__theme-light {
+    --str-chat__primary-color: #009688; /* Primary color (teal) */
+    --str-chat__active-primary-color: #004d40; /* Active color (darker teal) */
+    --str-chat__surface-color: #f5f5f5; /* Light surface color */
+    --str-chat__secondary-surface-color: #fafafa; /* Secondary light surface color */
+    --str-chat__primary-surface-color: #e0f2f1; /* Light background */
+    --str-chat__primary-surface-color-low-emphasis: #edf7f7; /* Low emphasis surface */
+    --str-chat__avatar-background-color: #bf360c; /* Avatar background */
+}
+
+.str-chat__theme-dark {
+    /* New background and blue color scheme */
+    --str-chat__primary-color: #2979ff; /* New primary blue color */
+    --str-chat__active-primary-color: #1c54b2; /* Darker blue for active state */
+    --str-chat__surface-color: #3f3f46; /* stone-800 background color */
+    --str-chat__secondary-surface-color: #2979ff; /* Darker background for secondary elements */
+    --str-chat__primary-surface-color: #1c54b2; /* Darker surface for containers */
+    --str-chat__primary-surface-color-low-emphasis: #3f3f46; /* Very low emphasis background */
+    --str-chat__avatar-background-color: #ff7043; /* Avatar background */
+}

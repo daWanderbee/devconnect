@@ -16,7 +16,7 @@ export async function POST(req) {
 
     console.log("Session:", session.user.email);
     const userMail = session.user.email;
-    const { desc, img } = await req.json();
+    const { desc, img,teamId } = await req.json();
 
     // Await the user lookup to get the document
     const user = await User.findOne({ email: userMail });
@@ -34,6 +34,7 @@ export async function POST(req) {
     const newPost = await Post.create({
       userId,
       desc,
+      teamId,
       img: img || "",
       likes: [],
       joinTeam: [],

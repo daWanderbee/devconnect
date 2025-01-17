@@ -33,7 +33,10 @@ const postSchema = new mongoose.Schema(
         updatedAt: {
             type: Date,
             default: Date.now,
-        }
+        },
+        teamId: {
+            type: mongoose.Schema.Types.ObjectId,
+        },
     },
     { timestamps: true }
 );

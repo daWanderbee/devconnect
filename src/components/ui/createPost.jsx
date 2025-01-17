@@ -43,51 +43,78 @@ const CreatePost = ({ handleClosePost }) => {
     setIsSubmitting(true);
 
     try {
+      setIsSubmitting(true); // Indicate loading state
       let mediaUrl = "";
-
+    
+      // Handle image upload
       if (data.file) {
         const formData = new FormData();
         formData.append("file", data.file);
-
-        const response = await fetch("/api/upload-image", {
+    
+        const uploadResponse = await fetch("/api/upload-image", {
           method: "POST",
           body: formData,
         });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          mediaUrl = result.url;
+    
+        const uploadResult = await uploadResponse.json();
+    
+        if (uploadResponse.ok) {
+          mediaUrl = uploadResult.url;
         } else {
-          throw new Error(result.message || "File upload failed");
+          alert(uploadResult.message || "File upload failed.");
+          setIsSubmitting(false);
+          return; // Exit if file upload fails
         }
       }
-
+    
+      // Create Team
+      const createTeamResponse = await fetch("/api/createTeam", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teamName: data.name }),
+      });
+    
+      const createTeamData = await createTeamResponse.json();
+    
+      if (!createTeamResponse.ok) {
+        alert(createTeamData.error || "Failed to create team. Try again.");
+        setIsSubmitting(false);
+        return; // Exit if team creation fails
+      }
+    
+      console.log("YE HAI TEAM: ", createTeamData.team._id);
+    
+      // Prepare post data
       const postData = {
         desc: data.desc,
         img: mediaUrl,
+        teamId: createTeamData.team._id, // Use team ID from the response
       };
-
+    
+      // Create Post
       const createPostResponse = await fetch("/api/create-post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(postData),
       });
-
+    
+      const createPostData = await createPostResponse.json();
+    
       if (createPostResponse.ok) {
-        reset();
-        setPreviewImage(null);
+        reset(); // Clear form fields
+        setPreviewImage(null); // Clear image preview
         alert("Post created successfully!");
-        handleClosePost(); // Close modal after successful post creation
+        handleClosePost(); // Close modal
       } else {
-        const error = await createPostResponse.json();
-        alert(error.message || "Failed to create post. Try again.");
+        alert(createPostData.message || "Failed to create post. Try again.");
       }
     } catch (error) {
+      console.error("Error:", error);
       alert("Something went wrong. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Stop loading state
     }
+    
   };
 
   return (
@@ -106,7 +133,14 @@ const CreatePost = ({ handleClosePost }) => {
         rows="3"
       ></textarea>
       {errors.desc && <p className="text-red-500 text-sm mt-2">{errors.desc.message}</p>}
-
+      <textarea
+        id="teamname"
+        placeholder="Your Team Name"
+        {...register("name", { required: "Teamname is required" })}
+        className="w-full bg-stone-800 rounded-lg border border-stone-700 p-4 text-sm text-gray-300 focus:outline-none focus:border-blue-600 transition-all resize-none"
+        rows="3"
+      ></textarea>
+      {errors.desc && <p className="text-red-500 text-sm mt-2">{errors.teamname.message}</p>}
       {/* File Input or Image Preview */}
       {previewImage ? (
         <div className="relative w-full h-64 shadow-2xl rounded-lg overflow-hidden">
