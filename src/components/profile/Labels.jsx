@@ -1,19 +1,16 @@
-import axios from "axios";
-import { useState, useEffect, React } from "react";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const Labels = () => {
-  const [labels, setLabels] = useState([]); // List of all labels
-  const [selectedLabels, setSelectedLabels] = useState([]); // User's selected labels
-  const [newLabel, setNewLabel] = useState(""); // Input field state
-  const [errorMessage, setErrorMessage] = useState(""); // Error message for duplicate label
-  const [newSelectedLabel, setNewSelectedLabel] = useState([]); // User's selected labels
+  const [labels, setLabels] = useState([]);
+  const [selectedLabels, setSelectedLabels] = useState([]);
+  const [newLabel, setNewLabel] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Fetch all labels
   useEffect(() => {
     const fetchLabels = async () => {
       try {
         const response = await axios.get("/api/fetchAllLabels");
-        console.log("Main labels:", response.data.labels);
         if (response.data.labels) {
           setLabels(response.data.labels);
         }
@@ -24,12 +21,10 @@ const Labels = () => {
     fetchLabels();
   }, []);
 
-  // Fetch selected labels
   useEffect(() => {
     const fetchSelectedLabels = async () => {
       try {
         const response = await axios.get("/api/fetchLabel");
-        console.log("Selected labels:", response.data.userLabels.labels);
         if (response.data.userLabels.labels) {
           setSelectedLabels(response.data.userLabels.labels);
         }
@@ -40,23 +35,18 @@ const Labels = () => {
     fetchSelectedLabels();
   }, []);
 
-  // Function to handle adding a new label
   const handleAddLabel = async () => {
-    if (!newLabel.trim()) return; // Prevent adding empty labels
+    if (!newLabel.trim()) return;
     try {
       const response = await axios.post("/api/addLabel", { names: newLabel });
-      console.log("Response:", response);
       if (response.data.message === "Label already exists") {
         setErrorMessage("Label already exists!");
       } else {
-        // Add the new label to the state
-        setLabels((prev) => [...prev, response.data.newLabel]);
-        setSelectedLabels((prev) => [...prev, response.data.newLabel]);
-        
-
-        setErrorMessage(""); // Clear error
+        setLabels(prev => [...prev, response.data.newLabel]);
+        setSelectedLabels(prev => [...prev, response.data.newLabel]);
+        setErrorMessage("");
       }
-      setNewLabel(""); // Reset input field
+      setNewLabel("");
     } catch (error) {
       console.error("Error adding label:", error);
     }
@@ -64,18 +54,13 @@ const Labels = () => {
 
   const addToSelectedLabels = async (label) => {
     try {
-      setNewSelectedLabel(label);
-      // Send request to update the user's selected labels in the database
       const response = await axios.post("/api/userLabel", {
-        labels : [label]
+        labels: [label]
       });
 
       if (response.status === 200) {
-        // Update the frontend state: remove from labels and add to selectedLabels
-        setLabels((prev) => prev.filter((item) => item._id !== label._id));
-        setSelectedLabels((prev) => [...prev, label]);
-      } else {
-        console.error("Error updating user labels:", response.data.message);
+        setLabels(prev => prev.filter(item => item._id !== label._id));
+        setSelectedLabels(prev => [...prev, label]);
       }
     } catch (error) {
       console.error("Error updating user labels:", error);
@@ -84,89 +69,103 @@ const Labels = () => {
 
   const addToUnselectedLabels = async (label) => {
     try {
-      // Send API request to remove label by ID
       const response = await axios.delete(`/api/removeUserLabel?labelId=${label._id}`);
       
       if (response.status === 200) {
-        // Update frontend state
-        setSelectedLabels((prev) => prev.filter((item) => item._id !== label._id));
-        setLabels((prev) => [...prev, label]);
-      } else {
-        console.error("Failed to remove label:", response.data.message);
+        setSelectedLabels(prev => prev.filter(item => item._id !== label._id));
+        setLabels(prev => [...prev, label]);
       }
     } catch (error) {
       console.error("Error removing label:", error);
     }
   };
+
+  const LabelTag = ({ label, onRemove, onClick }) => (
+    <button
+      onClick={onClick}
+      className="group flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:opacity-90 text-black"
+      style={{ backgroundColor: label.color }}
+    >
+      {label.name}
+      {onRemove && (
+        <span 
+          className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(label);
+          }}
+        >
+          ×
+        </span>
+      )}
+    </button>
+  );
   
   return (
-    <div className="h-1/3 w-1/2 m-10 bg-stone-900 rounded-lg overflow-y-scroll">
-      <div className="text-white ml-4 pt-2">Tags</div>
-
-      {/* Selected Labels Section */}
-      <div className="bg-stone-700 rounded-lg p-2 h-auto m-4">
-        {selectedLabels.length === 0 ? (
-          <p className="text-gray-400">No labels found</p>
-        ) : (
-          <div className="flex p-auto text-sm flex-wrap gap-2">
-            {selectedLabels.map((label) => (
-              <button
-                onClick={() => addToUnselectedLabels(label)}
-                key={label._id}
-                className="flex items-center px-1 py-1 rounded-lg"
-                style={{ backgroundColor: label.color }}
-              >
-                <span
-                  className="m-0 p-0 w-fit center h-4 rounded-full"
-                  style={{ backgroundColor: label.color }}
-                ></span>
-                {label.name}
-              </button>
-            ))}
-          </div>
-        )}
+    <div className="w-full max-w-2xl mx-auto bg-stone-900 rounded-lg shadow-lg">
+      {/* Header */}
+      <div className="p-4 border-b border-stone-700">
+        <h2 className="text-xl font-semibold text-white">Labels</h2>
       </div>
 
-      {/* Add New Label Input Section */}
-      <div className="flex m-4 h-6">
-        <input
-          type="text"
-          placeholder="Add new label..."
-          value={newLabel}
-          onChange={(e) => setNewLabel(e.target.value)}
-          className="w-full p-2 rounded-l-lg bg-stone-800 text-white"
-        />
-        <button
-          onClick={handleAddLabel}
-          className="bg-green-500 px-2 rounded-r-lg text-white"
-        >
-          Add
-        </button>
-      </div>
-      {errorMessage && <p className="text-red-500 text-lg m-4">{errorMessage}</p>}
+      <div className="p-4 space-y-4">
+        {/* Selected Labels */}
+        <div className="bg-stone-800 rounded-lg p-4 min-h-24 max-h-48 overflow-y-auto">
+          <h3 className="text-sm font-medium mb-2 text-white">Selected Labels</h3>
+          {selectedLabels.length === 0 ? (
+            <p className="text-stone-600 text-sm">No labels selected</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {selectedLabels.map(label => (
+                <LabelTag
+                  key={label._id}
+                  label={label}
+                  onRemove={addToUnselectedLabels}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
-      {/* All Labels Section */}
-      <div className="bg-stone-700 m-4 rounded-lg">
-        {labels.length === 0 ? (
-          <p className="text-gray-400 p-2">No labels found</p>
-        ) : (
-          <div className="flex p-1 text-sm flex-wrap gap-2">
-            {labels.map((label) => (
-              <button
-                onClick={() => addToSelectedLabels(label)}
-                key={label._id}
-                className="flex items-center px-2 py-1 rounded-lg"
-                style={{ backgroundColor: label.color }}
-              >
-                <span
-                  className="m-0 p-0 w-fit center h-4 rounded-full"
-                  style={{ backgroundColor: label.color }}
-                ></span>
-                {label.name}
-              </button>
-            ))}
-          </div>
+        {/* Add New Label */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Add new label..."
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            className="flex-1 px-3 py-2 bg-stone-800 border border-stone-700 rounded-lg text-black placeholder-stone-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+          <button
+            onClick={handleAddLabel}
+            className="px-4 py-2 bg-green-600 text-black rounded-lg hover:bg-green-700 transition-colors flex items-center"
+          >
+            <span className="mr-1">+</span>
+            Add
+          </button>
+        </div>
+        
+        {errorMessage && (
+          <p className="text-red-600 text-sm">{errorMessage}</p>
         )}
+
+        {/* Available Labels */}
+        <div className="bg-stone-800 rounded-lg p-4 min-h-24 max-h-48 overflow-y-auto">
+          <h3 className="text-sm font-medium mb-2 text-white">Available Labels</h3>
+          {labels.length === 0 ? (
+            <p className="text-stone-600 text-sm">No labels available</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {labels.map(label => (
+                <LabelTag
+                  key={label._id}
+                  label={label}
+                  onClick={() => addToSelectedLabels(label)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -11,6 +11,9 @@ export async function dbConnect() {
         return global.mongoose.conn;
     } else {
         const conString = process.env.MONGO_URI;
+        if (!conString) {
+            throw new Error("MONGO_URI is not defined in environment variables");
+        }
 
         if (!global.mongoose.promise) {
             global.mongoose.promise = mongoose.connect(conString, {

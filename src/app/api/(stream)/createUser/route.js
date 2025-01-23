@@ -1,5 +1,5 @@
 import { StreamChat } from "stream-chat";
-
+import User from '@/src/app/models/User';
 const api_key = "vyaz8uzwffwu";
 const api_secret = "hucyphyv4ewcsyb78vtrar5papm5fmska6tkm5nnz48gq6djuzqmsybrrrtzbf5j";
 
@@ -22,6 +22,17 @@ export async function GET(req) {
         // Generate token for the given userId
         const token = serverClient.createToken(user_id);
 
+        const user = await User.findById(user_id);
+        if (!user) {
+            return new Response(
+                JSON.stringify({ error: "User not found" }),
+                { status: 404, headers: { "Content-Type": "application/json" } }
+            );
+        }
+
+        // Update the user with the Stream Chat token
+        user.token = token;
+        await user.save();
         return new Response(
             JSON.stringify({ token }),
             { status: 200, headers: { "Content-Type": "application/json" } }

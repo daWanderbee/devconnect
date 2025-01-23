@@ -1,5 +1,6 @@
 import { dbConnect } from "../../lib/db";
 import User from "../../models/User";
+import axios from "axios";
 
 export async function POST(req) {
     if (req.method !== 'POST') {
@@ -38,6 +39,8 @@ export async function POST(req) {
             user.isVerified = true;
             await user.save();
 
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/createUser?userId=${user._id}`);
+            console.log("Create User Response: ", response.data);
             return new Response(JSON.stringify({
                 success: true,
                 message: "User verified successfully",

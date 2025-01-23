@@ -39,6 +39,42 @@ const TeamIcon = ({ isMember }) => (
   </svg>
 );
 
+const ImageModal = ({ isOpen, onClose, imageSrc }) => {
+  if (!isOpen) return null;
+
+  // Prevent scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="relative max-w-screen-xl max-h-screen w-full h-full flex items-center justify-center">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white hover:text-gray-300 z-50"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <img 
+          src={imageSrc} 
+          alt="Post content full size" 
+          className="max-w-full max-h-full object-contain"
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+    </div>
+  );
+};
+
 const Post = ({
   postId,
   teamId,
@@ -60,6 +96,18 @@ const Post = ({
   const [authordata, setAuthorData] = useState(null);
   const [liked, setLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [imageExists, setImageExists] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+  // Check if image exists
+  useEffect(() => {
+    if (currentImg) {
+      const img = new Image();
+      img.onload = () => setImageExists(true);
+      img.onerror = () => setImageExists(false);
+      img.src = currentImg;
+    }
+  }, [currentImg]);
 
   //Fetch team
   useEffect(() => {
@@ -194,18 +242,33 @@ const Post = ({
   };
 
   const getRelativeTime = (dateString) => {
-    const diff = new Date() - new Date(dateString);
+    // Parse the date string into a Date object
+    const parsedDate = new Date(dateString);
+    if (isNaN(parsedDate)) return "Invalid date";
+  
+    const now = new Date();
+    const diff = now - parsedDate;
+  
+    // Less than a minute
+    if (diff < 60 * 1000) return "Just now";
+  
+    // Less than an hour
     if (diff < 60 * 60 * 1000) return `${Math.floor(diff / (60 * 1000))} minutes ago`;
+  
+    // Less than a day
     if (diff < 24 * 60 * 60 * 1000) return `${Math.floor(diff / (60 * 60 * 1000))} hours ago`;
-    return new Date(dateString).toLocaleDateString("en-US", { 
-      day: "numeric", 
-      month: "long", 
-      year: "numeric" 
+  
+    // Beyond a day - format date to local time zone
+    return parsedDate.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   };
-
+  
+  
   return (
-    <div className="bg-stone-800 border border-slate-600 rounded-lg shadow-lg p-6 max-w-2xl mx-auto my-6">
+    <div className="bg-[#0E1422] border border-[#1A1A1A] rounded-lg shadow-lg p-6 max-w-2xl mx-auto my-6">
       {/* Author and Menu */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -221,7 +284,7 @@ const Post = ({
             )}
           </div>
           <div>
-            <h2 className="text-rose-200 font-bold">{authorName}</h2>
+            <h2 className="text-rose-200 font-bold">{authorName.toLowerCase()}</h2>
             <p className="text-gray-400 text-sm">{getRelativeTime(date)}</p>
           </div>
         </div>
@@ -235,12 +298,21 @@ const Post = ({
 
       {/* Content */}
       <p className="text-gray-300 mt-4">{currentDesc}</p>
-      {currentImg && (
-        <img 
-          src={currentImg} 
-          alt="Post content" 
-          className="mt-4 rounded-lg w-full object-cover max-h-96" 
-        />
+      {currentImg && imageExists && (
+        <>
+          <img 
+            src={currentImg} 
+            alt="Post content" 
+            className="mt-4 rounded-lg w-full object-cover max-h-96 cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => setIsImageModalOpen(true)}
+          />
+          
+          <ImageModal 
+            isOpen={isImageModalOpen}
+            onClose={() => setIsImageModalOpen(false)}
+            imageSrc={currentImg}
+          />
+        </>
       )}
 
       {/* Interaction Buttons */}

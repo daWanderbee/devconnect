@@ -1,0 +1,53 @@
+{
+  "name": "react-email",
+  "version": "1.10.1",
+  "description": "A live preview of your emails right in your browser.",
+  "bin": {
+    "email": "./dist/source/index.js"
+  },
+  "types": "./dist/source/index.d.ts",
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json",
+    "clean": "rm -rf dist",
+    "lint": "eslint ."
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/resend/react-email.git",
+    "directory": "packages/react-email"
+  },
+  "keywords": [
+    "react",
+    "email"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@commander-js/extra-typings": "9.4.1",
+    "@manypkg/find-root": "2.2.1",
+    "@octokit/rest": "19.0.7",
+    "@react-email/render": "0.0.11",
+    "chokidar": "3.5.3",
+    "commander": "9.4.1",
+    "detect-package-manager": "2.0.1",
+    "esbuild": "0.16.4",
+    "fs-extra": "11.1.1",
+    "glob": "10.3.4",
+    "log-symbols": "4.1.0",
+    "normalize-path": "3.0.0",
+    "ora": "5.4.1",
+    "read-pkg": "5.2.0",
+    "shelljs": "0.8.5",
+    "tree-cli": "0.6.7"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "11.0.1",
+    "@types/normalize-path": "3.0.0",
+    "@types/shelljs": "0.8.12",
+    "eslint-config-custom": "workspace:*",
+    "tsconfig": "workspace:*",
+    "typescript": "5.1.6"
+  }
+}

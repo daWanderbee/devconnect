@@ -37,7 +37,7 @@ const UserLabels = ({ id }) => {
         {userLabels.map((label, index) => (
           <div
             key={index}
-            className="px-4 py-2 bg-blue-500 text-white rounded-full shadow-md hover:bg-blue-600 transition"
+            className="px-4 py-2 bg-cyan-800 text-white rounded-full shadow-md hover:bg-blue-600 transition"
           >
             {label.name} {/* Render the "name" property of each label */}
           </div>

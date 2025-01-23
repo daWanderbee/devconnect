@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { signUpSchema } from "@/src/schemas/signUpSchema";
 import React, { useEffect } from "react";
 import axios, { AxiosError } from "axios";
+import { Code } from "lucide-react";
 
 // form imports
 import { Label } from "@/src/components/ui/label";
@@ -79,17 +80,17 @@ const Page = () => {
   };
 
   return (
-    <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-white dark:bg-black">
-      <h2 className="text-xl md:text-3xl font-bold dark:text-white text-center">
+    <div className="w-[60vw] max-w-md mx-auto rounded-2xl p-6 bg-[#13005A] shadow-2xl border-2 border-[#55D6F5]">
+      <div className="flex justify-center mb-6">
+        <Code className="w-12 h-12 text-[#03C988]" />
+      </div>
+      <h2 className="text-3xl font-bold text-center text-[#03C988] mb-4">
         Welcome to DevConnect
       </h2>
-      <p className="font-extralight text-center text-base md:text-xl dark:text-neutral-200 py-4">
-        Signup to your account
-      </p>
       <form className="my-8" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
           <LabelInputContainer>
-            <Label htmlFor="fullName">Full Name</Label>
+            <Label htmlFor="fullName" className="text-[#55D6F5]">Full Name</Label>
             <Input
               id="fullName"
               placeholder="John Doe"
@@ -99,7 +100,7 @@ const Page = () => {
           </LabelInputContainer>
         </div>
         <LabelInputContainer className="mb-4">
-          <Label htmlFor="username">Username</Label>
+          <Label htmlFor="username" className="text-[#55D6F5]">Username</Label>
           <Input
             id="username"
             placeholder="johndoe"
@@ -111,7 +112,7 @@ const Page = () => {
         </LabelInputContainer>
         <p className={`mb-4 text-sm ${usernameMessage === "Username is available"?'text-green-500' : 'text-red-500'}`}> {usernameMessage}</p>
         <LabelInputContainer className="mb-4">
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="email" className="text-[#55D6F5]">Email Address</Label>
           <Input
             id="email"
             placeholder="projectmayhem@fc.com"
@@ -120,7 +121,7 @@ const Page = () => {
           />
         </LabelInputContainer>
         <LabelInputContainer className="mb-4">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-[#55D6F5]">Password</Label>
           <Input
             id="password"
             placeholder="••••••••"
@@ -129,7 +130,7 @@ const Page = () => {
           />
         </LabelInputContainer>
         <button
-          className="bg-gradient-to-br mt-6 relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+          className="w-full bg-[#55D6F5] text-[#13005A] py-3 rounded-lg hover:bg-[#FFC0CB] transition-colors flex justify-center items-center"
           type="submit"
         >
           {isSubmitting ? <div className="flex justify-end align-middle items-center w-1/2 h-full"><Loader /></div> : "Sign up →"}

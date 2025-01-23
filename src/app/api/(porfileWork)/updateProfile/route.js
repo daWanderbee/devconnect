@@ -40,6 +40,8 @@ export async function POST(req) {
         );
     }
     try {
+        console.log("CoverImg", coverImg);
+        console.log("ProfileImg", profileImg);
         // Only update the fields that are provided
         if (username) user.username = username;
         if (fullName) user.fullName = fullName;

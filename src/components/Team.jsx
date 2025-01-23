@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Chat, Channel, ChannelHeader, MessageInput, MessageList, Thread, Window } from 'stream-chat-react';
 import axios from 'axios';
 import { getSession } from 'next-auth/react';
-import '@/globals.css';
+import '@/globals1.css';
 import 'stream-chat-react/dist/css/v2/index.css';
 
 const apiKey = 'vyaz8uzwffwu';

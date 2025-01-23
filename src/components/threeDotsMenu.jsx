@@ -7,7 +7,7 @@ const ThreeDotsMenu = ({ onShowUpdate, onDelete }) => {
     <div>
       <button
         onClick={() => setVisibility(!visibility)}
-        className="p-2 bg-stone-800 rounded-full hover:text-white"
+        className="p-2 bg-[#0E1422] rounded-full hover:text-white"
         aria-label="Menu"
       >
         <svg
@@ -26,7 +26,7 @@ const ThreeDotsMenu = ({ onShowUpdate, onDelete }) => {
         </svg>
       </button>
       {visibility && (
-        <div className="absolute bg-stone-800 text-white rounded-lg shadow-lg mt-2 z-10">
+        <div className="absolute bg-[#0f131e] text-white rounded-lg shadow-lg mt-2 z-10">
           <button
             onClick={() => {
               setVisibility(false);

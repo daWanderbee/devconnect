@@ -1,42 +1,15 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import { toast } from "react-hot-toast";
-import { useDebounce } from "@uidotdev/usehooks"; // Replace with your debounce hook path
-import { z } from "zod";
-
-// Validation Schema
-const profileUpdateSchema = z.object({
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters long")
-    .max(20, "Username must be at most 20 characters long")
-    .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores are allowed")
-    .optional(),
-  fullName: z.string().optional(),
-  bio: z.string().max(150, "Bio cannot exceed 150 characters").optional(),
-  coverImg: z.any().optional(),
-  profileImg: z.any().optional(),
-});
 
 const ProfileUpdateForm = ({ handleCloseProfile, currentProfile }) => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(profileUpdateSchema),
-    defaultValues: {
-      username: currentProfile?.username || "",
-      fullName: currentProfile?.fullName || "",
-      bio: currentProfile?.bio || "",
-    },
+  const [formData, setFormData] = useState({
+    username: currentProfile?.username || "",
+    fullName: currentProfile?.fullName || "",
+    bio: currentProfile?.bio || "",
+    coverImg: null,
+    profileImg: null
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,57 +17,89 @@ const ProfileUpdateForm = ({ handleCloseProfile, currentProfile }) => {
   const [previewProfileImage, setPreviewProfileImage] = useState(currentProfile?.profileImg || null);
   const [usernameMessage, setUsernameMessage] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const watchFields = watch(["username", "coverImg", "profileImg"]);
-  const debouncedUsername = useDebounce(watchFields.username, 200); // Use debounce for better UX
+  const validateUsername = (username) => {
+    if (!username) return "Username is required";
+    if (username.length < 3) return "Username must be at least 3 characters long";
+    if (username.length > 20) return "Username must be at most 20 characters long";
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) return "Only letters, numbers, and underscores are allowed";
+    return null;
+  };
+
+  const validateBio = (bio) => {
+    if (bio && bio.length > 150) return "Bio cannot exceed 150 characters";
+    return null;
+  };
 
   useEffect(() => {
-    let intervalId;
-  
-    if (debouncedUsername) {
-      // Check username availability every 2 seconds
-      intervalId = setInterval(async () => {
-        if (debouncedUsername && debouncedUsername !== currentProfile?.username) {
-          setIsCheckingUsername(true);
-          setUsernameMessage("Checking username...");
-  
-          try {
-            const response = await fetch(`/api/check-username-unique?username=${debouncedUsername}`);
-            const data = await response.json();
-  
-            if (data.error) {
-              setUsernameMessage(data.error);
-            } else {
-              setUsernameMessage("Username is available");
-            }
-          } catch {
-            setUsernameMessage("Error checking username");
-          } finally {
-            setIsCheckingUsername(false);
-          }
-        }
-      }, 2000); // Check every 2 seconds
+    const checkUsername = async () => {
+      const username = formData.username;
+      if (!username || username === currentProfile?.username) {
+        setUsernameMessage("");
+        return;
+      }
+
+      const error = validateUsername(username);
+      if (error) {
+        setUsernameMessage(error);
+        return;
+      }
+
+      setIsCheckingUsername(true);
+      setUsernameMessage("Checking username...");
+
+      try {
+        const response = await axios.get(`/api/check-username-unique?username=${username}`);
+        setUsernameMessage(response.data.error || "Username is available");
+      } catch (error) {
+        setUsernameMessage("Error checking username");
+      } finally {
+        setIsCheckingUsername(false);
+      }
+    };
+
+    const timeoutId = setTimeout(checkUsername, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.username, currentProfile?.username]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Clear errors when user types
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: null
+      }));
     }
-  
-    // Cleanup the interval on component unmount or when debouncedUsername changes
-    return () => clearInterval(intervalId);
-  
-  }, [debouncedUsername, currentProfile?.username]); // Re-run the effect if either of these values change
-  
+  };
 
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setErrors(prev => ({
+          ...prev,
+          [type]: "File size must be less than 5MB"
+        }));
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = () => {
-        if (type === "coverImg") {
-          setPreviewCoverImage(reader.result);
-        } else if (type === "profileImg") {
-          setPreviewProfileImage(reader.result);
-        }
+        if (type === "coverImg") setPreviewCoverImage(reader.result);
+        else if (type === "profileImg") setPreviewProfileImage(reader.result);
       };
       reader.readAsDataURL(file);
-      setValue(type, file);
+      setFormData(prev => ({
+        ...prev,
+        [type]: file
+      }));
     }
   };
 
@@ -104,215 +109,242 @@ const ProfileUpdateForm = ({ handleCloseProfile, currentProfile }) => {
     } else if (type === "profileImg") {
       setPreviewProfileImage(currentProfile?.profileImg || null);
     }
-    setValue(type, null);
+    setFormData(prev => ({
+      ...prev,
+      [type]: null
+    }));
+    setErrors(prev => ({
+      ...prev,
+      [type]: null
+    }));
   };
 
   const handleReset = () => {
-    reset();
+    setFormData({
+      username: currentProfile?.username || "",
+      fullName: currentProfile?.fullName || "",
+      bio: currentProfile?.bio || "",
+      coverImg: null,
+      profileImg: null
+    });
     setPreviewCoverImage(currentProfile?.coverImg || null);
     setPreviewProfileImage(currentProfile?.profileImg || null);
+    setErrors({});
     handleCloseProfile();
   };
 
-  const onSubmit = async (data) => {
+  const validateForm = () => {
+    const newErrors = {};
+
+    const usernameError = validateUsername(formData.username);
+    if (usernameError) newErrors.username = usernameError;
+
+    const bioError = validateBio(formData.bio);
+    if (bioError) newErrors.bio = bioError;
+
+    return newErrors;
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
     setIsSubmitting(true);
 
+    // Validate form
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      let coverImgUrl = previewCoverImage === currentProfile?.coverImg ? currentProfile?.coverImg : "";
-      let profileImgUrl = previewProfileImage === currentProfile?.profileImg ? currentProfile?.profileImg : "";
+      let coverImgUrl = currentProfile?.coverImg || "";
+      let profileImgUrl = currentProfile?.profileImg || "";
 
-      if (data.coverImg && previewCoverImage !== currentProfile?.coverImg) {
-        const coverImgFormData = new FormData();
-        coverImgFormData.append("file", data.coverImg);
-
-        const coverImgResponse = await fetch("/api/upload-image", {
-          method: "POST",
-          body: coverImgFormData,
+      // Handle cover image upload
+      if (formData.coverImg && previewCoverImage !== currentProfile?.coverImg) {
+        const formDataObj = new FormData();
+        formDataObj.append("file", formData.coverImg);
+        const response = await axios.post("/api/upload-image", formDataObj, {
+          headers: { "Content-Type": "multipart/form-data" },
         });
-
-        const coverImgResult = await coverImgResponse.json();
-        if (coverImgResponse.ok) {
-          coverImgUrl = coverImgResult.url;
-        } else {
-          throw new Error(coverImgResult.message || "Cover image upload failed");
-        }
+        coverImgUrl = response.data?.url || "";
       }
 
-      if (data.profileImg && previewProfileImage !== currentProfile?.profileImg) {
-        const profileImgFormData = new FormData();
-        profileImgFormData.append("file", data.profileImg);
-
-        const profileImgResponse = await fetch("/api/upload-image", {
-          method: "POST",
-          body: profileImgFormData,
+      // Handle profile image upload
+      if (formData.profileImg && previewProfileImage !== currentProfile?.profileImg) {
+        const formDataObj = new FormData();
+        formDataObj.append("file", formData.profileImg);
+        const response = await axios.post("/api/upload-image", formDataObj, {
+          headers: { "Content-Type": "multipart/form-data" },
         });
-
-        const profileImgResult = await profileImgResponse.json();
-        if (profileImgResponse.ok) {
-          profileImgUrl = profileImgResult.url;
-        } else {
-          throw new Error(profileImgResult.message || "Profile image upload failed");
-        }
+        profileImgUrl = response.data?.url || "";
       }
 
+      // Prepare profile data
       const profileData = {
-        username: data.username || currentProfile.username,
-        fullName: data.fullName,
-        bio: data.bio,
-        coverImg: coverImgUrl,
-        profileImg: profileImgUrl,
+        username: formData.username,
+        fullName: formData.fullName || undefined,
+        bio: formData.bio || undefined,
+        coverImg: coverImgUrl || undefined,
+        profileImg: profileImgUrl || undefined,
       };
 
-      const updateProfileResponse = await fetch("/api/updateProfile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profileData),
-      });
+      // Submit profile update
+      const response = await axios.post("/api/updateProfile", profileData);
 
-      if (updateProfileResponse.ok) {
+      if (response.status === 200) {
         toast.success("Profile updated successfully!");
-        reset();
         handleCloseProfile();
-      } else {
-        const error = await updateProfileResponse.json();
-        toast.error(error.message || "Failed to update profile.");
       }
     } catch (error) {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(error.response?.data?.message || "Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="p-14 w-full max-w-md overflow-y-scroll shadow-2xl mx-auto bg-stone-800 h-80 text-white rounded-lg space-y-6"
-    >
-      <h2 className="text-2xl font-bold">Update Profile</h2>
-      {/* Username Input */}
-      <div>
-        <input
-          id="username"
-          type="text"
-          placeholder="Username"
-          {...register("username")}
-          className="w-full bg-stone-800 rounded-lg border border-stone-700 p-4 text-sm text-gray-300 focus:outline-none focus:border-blue-600 transition-all"
-        />
-        {isCheckingUsername && <p className="text-blue-500">Checking username...</p>}
-        <p className={usernameMessage === "Username is available" ? "text-green-500" : "text-red-500"}>
-          {usernameMessage}
-        </p>
-        {errors.username && <span className="text-red-500">{errors.username.message}</span>}
-      </div>
-      {/* Full Name Input */}
+  const InputField = ({ id, name, label, type = "text", placeholder, error, ...props }) => (
+    <div className="space-y-2">
+      {label && <label htmlFor={id} className="block text-sm font-medium text-gray-300">{label}</label>}
       <input
-        id="fullName"
-        type="text"
-        placeholder="Full Name"
-        {...register("fullName")}
-        className="w-full bg-stone-800 rounded-lg border border-stone-700 p-4 text-sm text-gray-300 focus:outline-none focus:border-blue-600 transition-all"
+        id={id}
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        className="w-full px-4 py-3 bg-stone-700 border border-stone-600 rounded-lg text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+        {...props}
       />
-      {errors.fullName && <span className="text-red-500">{errors.fullName.message}</span>}
+      {error && <p className="text-red-400 text-sm">{error}</p>}
+    </div>
+  );
 
-      {/* Bio Textarea */}
-      <textarea
-        id="bio"
-        placeholder="Tell us about yourself..."
-        {...register("bio")}
-        className="w-full bg-stone-800 rounded-lg border border-stone-700 p-4 text-sm text-gray-300 focus:outline-none focus:border-blue-600 transition-all resize-none"
-        rows="3"
-      ></textarea>
-      {errors.bio && <span className="text-red-500">{errors.bio.message}</span>}
+  const ImageUpload = ({ id, name, label, preview, onRemove, error, ...props }) => (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-300">{label}</label>
+      {preview ? (
+        <div className="relative rounded-lg overflow-hidden group">
+          <img
+            src={preview}
+            alt={`${label} Preview`}
+            className="w-full h-48 object-cover transition-opacity group-hover:opacity-75"
+          />
+          <button
+            type="button"
+            onClick={onRemove}
+            className="absolute top-2 right-2 bg-black bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+          >
+            ✕
+          </button>
+        </div>
+      ) : (
+        <label
+          htmlFor={id}
+          className="block w-full cursor-pointer py-3 px-4 text-center bg-stone-700 text-gray-300 rounded-lg hover:bg-stone-600 transition-colors"
+        >
+          Upload {label}
+          <input
+            id={id}
+            name={name}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            {...props}
+          />
+        </label>
+      )}
+      {error && <p className="text-red-400 text-sm">{error}</p>}
+    </div>
+  );
 
-      {/* Cover Image Input */}
-      <div>
-        <label className="block text-gray-300 mb-2">Cover Image</label>
-        {previewCoverImage ? (
-          <div className="relative w-full h-64 shadow-2xl rounded-lg overflow-hidden">
-            <img
-              src={previewCoverImage}
-              alt="Cover Preview"
-              className="w-full hover:opacity-60 h-full object-cover"
+  return (
+    <form onSubmit={onSubmit} className="w-full max-w-2xl mx-auto bg-stone-800 rounded-lg shadow-xl overflow-hidden">
+      <div className="p-8 space-y-6">
+        <h2 className="text-2xl font-bold text-gray-200">Update Profile</h2>
+
+        <div className="space-y-6">
+          <InputField
+            id="username"
+            name="username"
+            label="Username"
+            placeholder="Enter username"
+            value={formData.username}
+            onChange={handleInputChange}
+            error={errors.username}
+          />
+          {isCheckingUsername && (
+            <p className="text-blue-400 text-sm">Checking username...</p>
+          )}
+          {usernameMessage && (
+            <p className={`text-sm ${
+              usernameMessage === "Username is available" ? "text-green-400" : "text-red-400"
+            }`}>
+              {usernameMessage}
+            </p>
+          )}
+
+          <InputField
+            id="fullName"
+            name="fullName"
+            label="Full Name"
+            placeholder="Enter full name"
+            value={formData.fullName}
+            onChange={handleInputChange}
+            error={errors.fullName}
+          />
+
+          <div className="space-y-2">
+            <label htmlFor="bio" className="block text-sm font-medium text-gray-300">Bio</label>
+            <textarea
+              id="bio"
+              name="bio"
+              placeholder="Tell us about yourself..."
+              value={formData.bio}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 bg-stone-700 border border-stone-600 rounded-lg text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+              rows="4"
             />
+            {errors.bio && <p className="text-red-400 text-sm">{errors.bio}</p>}
+          </div>
+
+          <ImageUpload
+            id="coverImg"
+            name="coverImg"
+            label="Cover Image"
+            preview={previewCoverImage}
+            onRemove={() => removeImage("coverImg")}
+            onChange={(e) => handleFileChange(e, "coverImg")}
+            error={errors.coverImg}
+          />
+
+          <ImageUpload
+            id="profileImg"
+            name="profileImg"
+            label="Profile Image"
+            preview={previewProfileImage}
+            onRemove={() => removeImage("profileImg")}
+            onChange={(e) => handleFileChange(e, "profileImg")}
+            error={errors.profileImg}
+          />
+
+          <div className="flex justify-end gap-4 pt-4">
             <button
               type="button"
-              onClick={() => removeImage("coverImg")}
-              className="absolute top-2 right-2 text-white p-1 rounded-full hover:bg-red-600"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-stone-700 text-gray-300 rounded-lg hover:bg-stone-600 transition-all disabled:opacity-50"
             >
-              ✕
+              Cancel
             </button>
-          </div>
-        ) : (
-          <label
-            htmlFor="coverImg"
-            className="block w-full cursor-pointer py-2 px-4 text-center bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none"
-          >
-            Upload Cover Image
-            <input
-              id="coverImg"
-              type="file"
-              accept="image/*"
-              {...register("coverImg")}
-              onChange={(e) => handleFileChange(e, "coverImg")}
-              className="hidden"
-            />
-          </label>
-        )}
-      </div>
-
-      {/* Profile Image Input */}
-      <div>
-        <label className="block text-gray-300 mb-2">Profile Image</label>
-        {previewProfileImage ? (
-          <div className="relative w-full h-64 shadow-2xl rounded-lg overflow-hidden">
-            <img
-              src={previewProfileImage}
-              alt="Profile Preview"
-              className="w-full hover:opacity-60 h-full object-cover"
-            />
             <button
-              type="button"
-              onClick={() => removeImage("profileImg")}
-              className="absolute top-2 right-2 text-white p-1 rounded-full hover:bg-red-600"
+              type="submit"
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-all disabled:opacity-50"
             >
-              ✕
+              {isSubmitting ? "Updating..." : "Save Changes"}
             </button>
           </div>
-        ) : (
-          <label
-            htmlFor="profileImg"
-            className="block w-full cursor-pointer py-2 px-4 text-center bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none"
-          >
-            Upload Profile Image
-            <input
-              id="profileImg"
-              type="file"
-              accept="image/*"
-              {...register("profileImg")}
-              onChange={(e) => handleFileChange(e, "profileImg")}
-              className="hidden"
-            />
-          </label>
-        )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-between">
-        <button
-          type="reset"
-          onClick={handleReset}
-          className="px-6 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 focus:outline-none"
-        >
-          Discard
-        </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 focus:outline-none"
-        >
-          {isSubmitting ? "Submitting..." : "Update Profile"}
-        </button>
+        </div>
       </div>
     </form>
   );

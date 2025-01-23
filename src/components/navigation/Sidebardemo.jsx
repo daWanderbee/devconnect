@@ -55,13 +55,14 @@ export function SidebarDemo({ children }) {
           setFullName(response.data.user.fullName); // Set the full name
           setImage(response.data.user.profileImg || UserImg); // Set the image
           setUser({ _id: response.data.user._id }); // Set the user ID
+          console.log("User data fetched successfully"+response  );
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
     }
   };
-
+ console.log("User data fetched successfully" + fullName);
   // Initialize StreamChat client once the token is ready
   useEffect(() => {
     const initClient = async () => {
@@ -87,7 +88,6 @@ export function SidebarDemo({ children }) {
     { label: "Dashboard", href: "/dashboard", icon: <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
     { label: "Profile", href: "/profile", icon: <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
     { label: "Teams", href: "/teams", icon: <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
-    { label: "Settings", href: "#", icon: <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
     { label: "Logout", href: "#", icon: <IconArrowLeft onClick={onSignout} className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" /> },
   ];
 

@@ -1,11 +1,22 @@
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { dbConnect } from "@/src/app/lib/db";
 import User from "@/src/app/models/User";
-
+import axios from "axios";
+import GitHubProvider from "next-auth/providers/github";
 
 export const authOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET
+    }),
     CredentialsProvider({
       id: "credentials",
       name: "Credentials",
@@ -14,57 +25,92 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // Connect to the database
         await dbConnect();
 
-        // Find user by username or email
         const user = await User.findOne({
           $or: [
             { username: credentials.identifier },
             { email: credentials.identifier },
           ],
         });
-        console.log(user);
-        // If user doesn't exist or password is incorrect, throw an error
-        if (!user?.isVerified || !(await bcrypt.compare(credentials.password, user.password))) {
-          throw new Error("Invalid credentials or unverified account");
+
+        if (!user) {
+          throw new Error("No user found with this username or email");
         }
 
-        // Return user data including _id, username, and email
+        const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password);
+        if (!isPasswordCorrect) {
+          throw new Error("Invalid password");
+        }
+
+        if (!user.isVerified) {
+          throw new Error("Account not verified. Please verify your account.");
+        }
+
         return { _id: user._id.toString(), username: user.username, email: user.email };
       },
     }),
   ],
   callbacks: {
-    // This callback is fired when a JWT is created or updated.
-    async jwt({ token, user }) {
-      if (user) {
-        // Add user data to token after login
+    async jwt({ token, user, account, profile }) {
+      if (account?.provider === "google"|| account?.provider === "github") {
+        await dbConnect();
+        
+        // First try to find an existing user
+        let dbUser = await User.findOne({ email: profile.email });
+        
+        // If no user exists, create one
+        if (!dbUser) {
+          dbUser = await User.create({
+            username: profile.name,
+            email: profile.email,
+            fullName: profile.name,
+            isVerified: true,
+            profileImg: profile.picture || null,
+            password: "xyz",
+          });
+        }
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/createUser?userId=${dbUser._id.toString()}`);
+
+        // Ensure we have the database user object before setting token properties
+        if (dbUser) {
+          token._id = dbUser._id.toString();
+          token.username = dbUser.username;
+          token.email = dbUser.email;
+          token.picture = profile.picture;
+        }
+      } else if (user) {
+        // For credentials provider
         token._id = user._id;
         token.username = user.username;
-      } // Log the token for debugging
-      return token; // Return the token with user data
+      }
+
+      return token;
     },
 
-    // This callback is fired when a session is created or updated.
     async session({ session, token }) {
       if (token) {
-        // Ensure _id and username are added to the session from the token
-        session.user._id = token._id;
-        session.user.username = token.username;
-      } // Log session data for debugging
-      return session; // Return the session with updated user data
+        session.user = {
+          ...session.user,
+          _id: token._id,
+          username: token.username,
+          email: token.email,
+          picture: token.picture || null,
+        };
+      }
+
+      return session;
     },
   },
   pages: {
-    signIn: "/sign-in", // Custom sign-in page (if applicable)
-    signOut: "/", // Custom sign-out page (if applicable)
+    signIn: "/sign-in",
+    signOut: "/",
   },
   session: {
-    strategy: "jwt", // Using JWT for session strategy
-    maxAge: 60 * 60 * 24, // 1 day (set max age for the JWT token if needed)
+    strategy: "jwt",
+    maxAge: 60 * 60 * 24, // 1 day
   },
-  secret: process.env.NEXTAUTH_SECRET, // Ensure you have a secure secret
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
-export default authOptions;
+export default NextAuth(authOptions);

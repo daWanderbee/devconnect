@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <AuthProvider>
-      <body>
+      <body className="h-auto">
         {children}
         <Toaster position="bottom-right" />
       </body>
